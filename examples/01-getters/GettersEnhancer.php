@@ -14,7 +14,7 @@ class GettersEnhancer implements \Enhancer\IEnhancer
 			$name = $match[1];
 			$ucName = ucfirst($name);
 
-			$snippet = "
+			$snippet = <<<PHP
 				private \$$name;
 
 				public function get$ucName()
@@ -27,7 +27,7 @@ class GettersEnhancer implements \Enhancer\IEnhancer
 					\$this->$name = \$$name;
 					return \$this;
 				}
-			";
+PHP;
 
 			return str_replace("\n", ' ', $snippet); // remove newlines so that it doesn't break line numbers
 		}, $code);
