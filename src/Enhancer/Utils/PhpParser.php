@@ -12,7 +12,10 @@ use Nette;
 class PhpParser extends Nette\Utils\Tokenizer
 {
 
-	function __construct($code)
+	/**
+	 * @param array $code
+	 */
+	public function __construct($code)
 	{
 		$this->ignored = array(T_COMMENT, T_DOC_COMMENT, T_WHITESPACE);
 		foreach (token_get_all($code) as $token) {
