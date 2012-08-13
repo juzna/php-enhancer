@@ -41,4 +41,4 @@ class ClassHookHelper
 
 
 $movie = MovieFactory::createMovie("The Dark Night Returns", 10);
-var_dump($movie);
+dump($movie);
