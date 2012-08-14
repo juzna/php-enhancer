@@ -366,7 +366,7 @@ class GenericsRegistry
 	 * @param object $object
 	 * @param string $typeArgumentName
 	 */
-	public function resolveTypeArgument($object, $typeArgumentName)
+	public static function resolveTypeArgument($object, $typeArgumentName)
 	{
 		if ( ! $typeValues = self::getParametrizedTypesForObject($object)) throw new InvalidArgumentException("Object has no type-values");
 		if ( ! isset($typeValues[$typeArgumentName])) throw new InvalidArgumentException("Object does not have type-value named '$typeArgumentName'");
