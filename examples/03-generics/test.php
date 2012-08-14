@@ -1,4 +1,7 @@
 <?php
+define('DO_TRANSLATE', true);
+define('AUTOLOAD_TRANSLATED', true);
+
 
 require_once __DIR__ . '/../bootstrap.php';
 
@@ -7,19 +10,36 @@ require_once __DIR__ . '/GenericsEnhancer.php';
 Enhancer\EnhancerStream::$enhancer = new GenericsEnhancer;
 
 // Register autoloader
-$loader = new Enhancer\Loaders\ClassLoader;
-$loader->register(true);
-$loader->add('', __DIR__ . '/classes');
+if (AUTOLOAD_TRANSLATED) { // autoload translated files instead of direct compilation (debugging)
+	$loader = new \Composer\Autoload\ClassLoader();
+	$loader->register(true);
+	$loader->add('', __DIR__ . '/output/classes');
+
+} else {
+	$loader = new Enhancer\Loaders\ClassLoader;
+	$loader->register(true);
+	$loader->add('', __DIR__ . '/classes');
+}
 
 
 /*****************  translate  *****************j*d*/
 
-echo "Translating files... \n";
+if (DO_TRANSLATE) {
+	// translate and save all files (for debugging)
+	foreach(Nette\Utils\Finder::findFiles("*.php")->from(__DIR__ . '/usage', __DIR__ . '/classes') as /** @var SplFileInfo $file */ $file) {
+		$relativePath = substr($file->getRealPath(), strlen(__DIR__) + 1);
+		$outputPath = __DIR__ . '/output/' . $relativePath;
 
-@mkdir($dstDir = __DIR__ . '/output/');
-foreach (glob(__DIR__ . '/usage/*.php') as $test) {
-	file_put_contents($dstDir . basename($test), file_get_contents("enhance://$test"));
+	//	echo "$relativePath -> $outputPath\n";
+
+		@mkdir(dirname($outputPath), 0777, true);
+		file_put_contents($outputPath, file_get_contents("enhance://{$file->getRealPath()}"));
+	}
 }
+
+
+/*****************  globals  *****************j*d*/
+$em = NULL;
 
 
 /*****************  tests  *********************/

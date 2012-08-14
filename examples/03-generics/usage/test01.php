@@ -1,3 +1,3 @@
 <?php
 
-$repository = new ORM\Repository<ORM\Entity\User>();
+$repository = new ORM\Repository<ORM\Entity\User>($em);

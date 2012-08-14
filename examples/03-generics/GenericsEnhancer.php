@@ -36,6 +36,9 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 	/** @var string[]  names of type arguments of class being processed now */
 	private $currentTypeArgs;
 
+	/** @var array shortName => fullName */
+	private $uses;
+
 
 
 	/**
@@ -46,11 +49,12 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 	{
 		// clean
 		$this->currentTypeArgs = NULL;
+		$this->uses = array('' => '');
+		$this->namespace = '';
 
 
 		$this->parser = new Enhancer\Utils\PhpParser($code);
-		$this->namespace = $s = '';
-		$uses = array('' => '');
+		$s = '';
 
 		while (($token = $this->parser->fetch()) !== FALSE) {
 			if ($this->parser->isCurrent(T_NAMESPACE)) {
@@ -72,7 +76,7 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 					$as = $this->parser->fetch(T_AS)
 						? $this->parser->fetch(T_STRING)
 						: substr($class, strrpos("\\$class", '\\'));
-					$uses[strtolower($as)] = $class;
+					$this->uses[strtolower($as)] = $class;
 				} while ($this->parser->fetch(','));
 				$this->parser->fetch(';');
 
@@ -150,7 +154,7 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 			}
 		}
 
-		dump($s);
+//		dump($s);
 
 		return $s;
 	}
@@ -219,8 +223,8 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 	private function fullClass($className)
 	{
 		$segment = strtolower(substr($className, 0, strpos("$className\\", '\\')));
-		$full = isset($uses[$segment])
-			? $uses[$segment] . substr($className, strlen($segment))
+		$full = isset($this->uses[$segment])
+			? $this->uses[$segment] . substr($className, strlen($segment))
 			: $this->namespace . '\\' . $className;
 		return str_replace('\\', '\\\\', ltrim($full, '\\'));
 	}
@@ -273,7 +277,8 @@ class GenericsRegistry
 	 */
 	public static function newInstance($className, array $rawTypeValues = null /*, $args */)
 	{
-		$typeValues = self::resolveTypeValues($className, $rawTypeValues);
+		$refl = new ReflectionClass($className); // autoloads the class
+		$typeValues = self::resolveTypeValues($className, $rawTypeValues); // check types
 
 		$args = func_get_args();
 		array_shift($args); // className
@@ -282,7 +287,6 @@ class GenericsRegistry
 
 		echo "LOG: Creating instance of '$className' with $cnt arguments\n";
 
-		$refl = new ReflectionClass($className);
 		$obj = $refl->newInstanceArgs($args);
 
 		echo "LOG: ... done\n";
@@ -318,6 +322,8 @@ class GenericsRegistry
 	{
 		$x = array();
 		foreach ($typeArguments as $arg) $x[] = TypeArgument::create($arg);
+
+		echo "LOG: registering class $className\n";
 
 		self::$classes[strtolower($className)] = $x;
 	}
@@ -382,7 +388,9 @@ class GenericsRegistry
 	 */
 	protected static function resolveTypeValues($className, $rawTypeValues)
 	{
-		if(!isset(self::$classes[$className])) throw new InvalidArgumentException("Class '$className' is not generic");
+		$className = strtolower($className);
+
+		if( ! isset(self::$classes[$className])) throw new InvalidArgumentException("Class '$className' is not generic");
 		$typeArguments = self::$classes[$className];
 
 		if(count($typeArguments) !== count($rawTypeValues)) throw new InvalidArgumentException("Generic values do not mach generic arguments");
