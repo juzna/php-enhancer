@@ -40,7 +40,7 @@ class Factory<E>
 ?>
 <?php#c
 \GenericsRegistry::registerClass('Collection', array('E'));class Factory implements \GenericType
-{
+{public function getParametrizedType($parameterName) { return "TODO"; }
 	function create($id)
 	{
 		return \GenericsRegistry::newInstance(\GenericsRegistry::resolveTypeArgument($this, 'E'), NULL, $id);
