@@ -1,7 +1,7 @@
 <?php
-define('DO_TRANSLATE', true);
+define('DO_TRANSLATE', false);
 define('AUTOLOAD_TRANSLATED', true);
-
+define('RUN_TRANSLATED', true);
 
 require_once __DIR__ . '/../bootstrap.php';
 
@@ -48,7 +48,13 @@ echo "Running tests... \n";
 
 foreach (glob(__DIR__ . '/usage/*.php') as $test) {
 	echo "- running " , basename($test), "\n\n";
-	include_once "enhance://$test";
+
+	if (RUN_TRANSLATED) {
+		include_once __DIR__ . '/output/' . substr($test, strlen(__DIR__) + 1);
+
+	} else {
+		include_once "enhance://$test";
+	}
 }
 
 echo "\n\n", "done", "\n";
