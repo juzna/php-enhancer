@@ -33,6 +33,9 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 	 */
 	private $functionParameterHint = array();
 
+	/** @var string[]  names of type arguments of class being processed now */
+	private $currentTypeArgs;
+
 
 
 	/**
@@ -41,6 +44,10 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 	 */
 	public function enhance($code)
 	{
+		// clean
+		$this->currentTypeArgs = NULL;
+
+
 		$this->parser = new Enhancer\Utils\PhpParser($code);
 		$this->namespace = $s = '';
 		$uses = array('' => '');
@@ -79,7 +86,9 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 					$s .= "\\GenericsRegistry::newInstance('" . $this->fullClass($className) . "'";
 
 					if ($generics = $this->fetchGenericParameter()) {
-						$s .= ', array(\'' . implode('\', \'', $generics) . '\')';
+						$s .= ', ' . $this->createCodeGenericParameter($generics);
+					} else {
+						$s .= ', NULL'; // no generics
 					}
 
 					if ($this->parser->isNext(';')) { // without parentheses
@@ -100,7 +109,7 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 					$token . $this->parser->fetchAll(T_WHITESPACE), NULL, NULL, NULL,
 				);
 				$classDef[1] .= $className = $this->parser->fetchAll(T_STRING, T_NS_SEPARATOR);
-				$generics = $this->fetchGenericParameter();
+				$generics = $this->currentTypeArgs = $this->fetchGenericParameter();
 				if ($this->parser->isNext(T_EXTENDS)) {
 					$classDef[2] .= $this->parser->fetch() . $this->parser->fetchAll(T_STRING, T_NS_SEPARATOR);
 				}
@@ -110,6 +119,10 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 				if ($generics) {
 					$classDef[3] .= (!$classDef[3] ? ' implements ' : ', ') . '\GenericType';
 				}
+
+				$classDef[4] = $this->parser->fetchAll('{'); // start class
+
+				$classDef[5] = $generics ? 'public function getParametrizedType($parameterName) { return "TODO"; }' : '';
 
 				$s .= '\\GenericsRegistry::registerClass(\'' .
 					$this->fullClass($className) . '\', array(\'' .
@@ -144,6 +157,10 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 
 
 
+	/*****************  parsing  *****************j*d*/
+
+
+
 	/**
 	 * @return array
 	 */
@@ -167,6 +184,31 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 
 		return $params;
 	}
+
+
+
+	/*****************  helper code generating  *****************j*d*/
+
+
+
+	private function createCodeGenericParameter($generics)
+	{
+		$parts = array();
+		foreach ($generics as $v) {
+			if ($this->currentTypeArgs && in_array($v, $this->currentTypeArgs)) { // type argument
+				$parts[] = "\\GenericsRegistry::resolveTypeArgument(\$this, '$v')";
+
+			} else { // just a simple class name
+				$parts[] = "'$v'";
+			}
+		}
+
+		return 'array(' . implode(', ', $parts) . ')';
+	}
+
+
+
+	/*****************  utils  *****************j*d*/
 
 
 
@@ -212,12 +254,12 @@ class GenericsRegistry
 {
 
 	/**
-	 * @var array
+	 * @var array  oid => typeArgumentName => TypeValue
 	 */
 	private static $instances = array();
 
 	/**
-	 * @var array
+	 * @var array  className => index => TypeArgument
 	 */
 	private static $classes = array();
 
@@ -225,12 +267,14 @@ class GenericsRegistry
 
 	/**
 	 * @param string $className
-	 * @param array $genericTypes
+	 * @param string[]|TypeValue[] $rawTypeValues
 	 *
 	 * @return mixed
 	 */
-	public static function newInstance($className, $genericTypes /*, $args */)
+	public static function newInstance($className, array $rawTypeValues = null /*, $args */)
 	{
+		$typeValues = self::resolveTypeValues($className, $rawTypeValues);
+
 		$args = func_get_args();
 		array_shift($args); // className
 		array_shift($args); // genericTypes
@@ -243,7 +287,8 @@ class GenericsRegistry
 
 		echo "LOG: ... done\n";
 
-		self::$instances[spl_object_hash($obj)] = $genericTypes;
+		self::$instances[spl_object_hash($obj)] = $typeValues;
+
 		return $obj;
 	}
 
@@ -251,7 +296,7 @@ class GenericsRegistry
 
 	/**
 	 * @param object $object
-	 * @return array
+	 * @return TypeValue[]  typeArgumentName => TypeValue
 	 */
 	public static function getParametrizedTypesForObject($object)
 	{
@@ -267,11 +312,171 @@ class GenericsRegistry
 
 	/**
 	 * @param string $className
-	 * @param array $typeNames
+	 * @param string[] $typeArguments
 	 */
-	public static function registerClass($className, array $typeNames)
+	public static function registerClass($className, array $typeArguments)
 	{
-		self::$classes[strtolower($className)] = $typeNames;
+		$x = array();
+		foreach ($typeArguments as $arg) $x[] = TypeArgument::create($arg);
+
+		self::$classes[strtolower($className)] = $x;
+	}
+
+
+
+	/**
+	 * Check if object matches generic type (class + type values)
+	 * @param object $object
+	 * @param string $className
+	 * @param TypeValue[] $typeValues
+	 * @return bool
+	 */
+	public static function checkInstance($object, $className, array $typeValues)
+	{
+		if ( ! $object instanceof $className) return FALSE;
+
+		// TODO
+
+		return TRUE;
+	}
+
+
+
+	/**
+	 * Same as #checkInstance, but throws if invalid
+	 * @param object $object
+	 * @param string $className
+	 * @param TypeValue[] $typeValues
+	 */
+	public static function ensureInstance($object, $className, array $typeValues)
+	{
+		if ( ! self::checkInstance($object, $className, $typeValues)) throw new Exception("Invalid type");
+	}
+
+
+	/**
+	 * For a particular instance of generic class, find the actual class
+	 * e.g E needs to be resolved in: return new Collection<E>(...)
+	 * @param object $object
+	 * @param string $typeArgumentName
+	 */
+	public function resolveTypeArgument($object, $typeArgumentName)
+	{
+		if ( ! $typeValues = self::getParametrizedTypesForObject($object)) throw new InvalidArgumentException("Object has no type-values");
+		if ( ! isset($typeValues[$typeArgumentName])) throw new InvalidArgumentException("Object does not have type-value named '$typeArgumentName'");
+
+		return $typeValues[$typeArgumentName]->actualClass;
+	}
+
+
+
+	/*****************  utils  *****************j*d*/
+
+
+
+	/**
+	 * From a generic class and raw type values, get resolved TypeValue's
+	 * @param string $className
+	 * @param string[]|TypeValue[] $rawTypeValues
+	 * @return TypeValue[]  typeArgumentName => TypeValue
+	 */
+	protected static function resolveTypeValues($className, $rawTypeValues)
+	{
+		if(!isset(self::$classes[$className])) throw new InvalidArgumentException("Class '$className' is not generic");
+		$typeArguments = self::$classes[$className];
+
+		if(count($typeArguments) !== count($rawTypeValues)) throw new InvalidArgumentException("Generic values do not mach generic arguments");
+
+		$typeValues = array();
+		foreach($typeArguments as $k => $typeArgument) {
+			$val = $rawTypeValues[$k];
+
+			if ( ! $val instanceof TypeValue) { // string -> TypeValue
+				TypeValue::create($typeArgument, $val);
+
+			} else { // validate TypeValue to match
+				// TODO
+			}
+
+			$typeValues[$typeArgument->name] = $val;
+		}
+
+		return $typeValues;
 	}
 
 }
+
+
+
+/**
+ * Type argument for generics
+ *
+ * Examples:
+ *  - E
+ *  - E extends Entity
+ *  - E super RegisteredUserEntity
+ */
+class TypeArgument
+{
+	public $name;
+	public $className;
+	public $extends;
+
+
+
+	public static function create($code)
+	{
+		if (preg_match('~^(\S+)\s+(extends|super)\s+(\S+)$~', $code, $match)) {
+			return new self($match[1], $match[3], $match[2] === 'extends');
+
+		} elseif (preg_match('~^\S+$~', $code)) {
+			return new self($code);
+
+		} else {
+			throw new InvalidArgumentException("Invalid type argument");
+		}
+	}
+
+	protected function __construct($name, $className = NULL, $extends = TRUE)
+	{
+		$this->name = $name;
+		$this->className = $className;
+		$this->extends = $extends;
+	}
+
+	public function matches($actualClassName)
+	{
+		if ( ! $this->className) return TRUE;
+
+		if ($this->extends) { // actualClassName should be instanceof className
+			return Nette\Reflection\ClassType::from($actualClassName)->isSubclassOf($this->className);
+
+		} else { // superclass
+			return Nette\Reflection\ClassType::from($this->className)->isSubclassOf($actualClassName);
+		}
+	}
+
+}
+
+
+/**
+ * Particular instance of TypeArgument
+ */
+class TypeValue extends TypeArgument
+{
+	public $actualClass;
+
+
+
+	public static function create(TypeArgument $arg, $actualClass)
+	{
+		if ( ! $arg->matches($actualClass)) throw new InvalidArgumentException("Incompatible type");
+
+		$ret = new self($arg->name, $arg->className, $arg->extends);
+		$ret->actualClass = $actualClass;
+
+		return $ret;
+	}
+
+}
+
