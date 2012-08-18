@@ -71,14 +71,15 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 					$s .= $token;
 					continue;
 				}
+				$s .= $token . $this->parser->fetchAll(T_WHITESPACE);
 				do {
-					$class = $this->parser->fetchAll(T_STRING, T_NS_SEPARATOR);
+					$s .= $class = $this->parser->fetchAll(T_STRING, T_NS_SEPARATOR);
 					$as = $this->parser->fetch(T_AS)
 						? $this->parser->fetch(T_STRING)
 						: substr($class, strrpos("\\$class", '\\'));
 					$this->uses[strtolower($as)] = $class;
 				} while ($this->parser->fetch(','));
-				$this->parser->fetch(';');
+				$s .= $this->parser->fetch(';');
 
 			} elseif ($this->parser->isCurrent(T_NEW)) {
 				$prefix = $token . $this->parser->fetchAll(T_WHITESPACE);
@@ -87,7 +88,13 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 					$s .= $prefix . $className;
 
 				} elseif ($className) {
-					$s .= "\\GenericsRegistry::newInstance('" . $this->fullClass($className) . "'";
+					if ($this->currentTypeArgs && in_array($className, $this->currentTypeArgs)) {
+						$classNameCode = "\\GenericsRegistry::resolveTypeArgument(\$this, '$className')";
+					} else {
+						$classNameCode = "'" . $this->fullClass($className) . "'";
+					}
+
+					$s .= "\\GenericsRegistry::newInstance(" . $classNameCode;
 
 					if ($generics = $this->fetchGenericParameter()) {
 						$s .= ', ' . $this->createCodeGenericParameter($generics);
@@ -125,17 +132,17 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 				}
 				if ($generics) {
 					if (!$classDef[4]) $classDef[4] = ' implements ';
-					$classDef[5] .= ($classDef[5] ? ', ' : '') . '\GenericType ';
+					$classDef[5] .= ($classDef[5] ? ', ' : '') . '\GenericType';
 				}
 
-				$classDef[6] = $this->parser->fetchAll('{'); // start class
+				$classDef[6] = $this->parser->fetch(T_WHITESPACE) . $this->parser->fetchAll('{'); // start class
 
 				$classDef[7] = $generics ? 'public function getParametrizedType($parameterName) { return \GenericsRegistry::getParametrizedTypesForObject($this); }' : '';
 
 				$s .= '\\GenericsRegistry::registerClass(\'' .
 					$this->fullClass($className) . '\', array(\'' .
 					implode('\', \'', $generics) .
-					'\')); ';
+					'\'));';
 				$s .= implode($classDef);
 
 			} elseif ($this->parser->isCurrent(T_FUNCTION)) {
@@ -175,11 +182,10 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 					if (in_array($hint, $this->currentTypeArgs)) {
 						$hintCode = "\\GenericsRegistry::resolveTypeArgument(\$this, '$hint')";
 						$hint = $ws1 = NULL; // clear real typehint FIXME: if 'E extends Entity', leave 'Entity'
-					} else {
-						$hintCode = "'{$this->fullClass($hint)}'";
 					}
 
 					if ($typeValuesCode || $hintCode) {
+						$hintCode = $hintCode ?: "'{$this->fullClass($hint)}'";
 						$methodStartCode .= "\\GenericsRegistry::ensureInstance($variable, $hintCode, array($typeValuesCode));";
 					}
 
@@ -250,7 +256,7 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 				$parts[] = "\\GenericsRegistry::resolveTypeArgument(\$this, '$v')";
 
 			} else { // just a simple class name
-				$parts[] = "'$v'";
+				$parts[] = "'{$this->fullClass($v)}'";
 			}
 		}
 
@@ -273,7 +279,7 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 		$full = isset($this->uses[$segment])
 			? $this->uses[$segment] . substr($className, strlen($segment))
 			: $this->namespace . '\\' . $className;
-		return str_replace('\\', '\\\\', ltrim($full, '\\'));
+		return ltrim($full, '\\'); //str_replace('\\', '\\\\', ltrim($full, '\\'));
 	}
 
 }

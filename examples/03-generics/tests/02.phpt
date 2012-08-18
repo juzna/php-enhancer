@@ -4,6 +4,7 @@ use MyNS\Foo;
 $f = new Foo;
 ?>
 <?php#c
+use MyNS\Foo;
 $f = \GenericsRegistry::newInstance('MyNS\Foo', NULL);
 ?>
 ------------------------------------------------j-d--
@@ -15,6 +16,7 @@ use MyNS\Foo;
 $f = new Factory<Foo>();
 ?>
 <?php#c
+use MyNS\Foo;
 $f = \GenericsRegistry::newInstance('Factory', array('MyNS\Foo'));
 ?>
 ------------------------------------------------j-d--
@@ -41,7 +43,7 @@ class Factory<E>
 }
 ?>
 <?php#c
-\GenericsRegistry::registerClass('Collection', array('E'));class Factory implements \GenericType
+\GenericsRegistry::registerClass('Factory', array('E'));class Factory implements \GenericType
 {public function getParametrizedType($parameterName) { return \GenericsRegistry::getParametrizedTypesForObject($this); }
 	function create($id)
 	{
@@ -63,9 +65,10 @@ class Factory<E>
 }
 ?>
 <?php#c
-\GenericsRegistry::registerClass('Factory', array('E')); class Factory implements \GenericType
+use ORM\Common\Collection;
+\GenericsRegistry::registerClass('Factory', array('E'));class Factory implements \GenericType
 {public function getParametrizedType($parameterName) { return \GenericsRegistry::getParametrizedTypesForObject($this); }
-	public function createCollection($ids) {
+	public function createCollection(array $ids) {
 		return \GenericsRegistry::newInstance('ORM\Common\Collection', array(\GenericsRegistry::resolveTypeArgument($this, 'E')), $ids[0], $ids[1]);
 	}
 }
