@@ -140,18 +140,63 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 
 			} elseif ($this->parser->isCurrent(T_FUNCTION)) {
 				$s .= $token . $this->parser->fetchAll(T_WHITESPACE);
-				$name = preg_split('~\s+~', $this->parser->fetchUntil('('), 2);
-				if (count($name) === 1) {
-					$s .= reset($name);
-				} else {
-					array_shift($name); // todo: validate return type
-					$s .= reset($name);
+
+				$name = $this->parser->fetchAll(T_STRING, T_NS_SEPARATOR, T_WHITESPACE);
+				if ($this->parser->isNext('(')) { // it was function name
+					$s .= $name;
+
+				} else { // it was return type function name follows
+					// TODO: store return type somewhere
+
+					$name = $this->parser->fetchAll(T_STRING, T_NS_SEPARATOR, T_WHITESPACE);
+					$s .= $name;
+
+					assert($this->parser->isNext('('));
 				}
 
-				$s .= $this->parser->fetch(); // fetch (
-				while ($hint = $this->parser->fetchUntil(T_VARIABLE, ')')) {
+				$methodStartCode = NULL;
 
+				$s .= $this->parser->fetchAll('(', T_WHITESPACE);
+				while ( ! $this->parser->isNext(')')) {
+					// hint, whitespace, variable, default value
+					$hint = $this->parser->fetchAll(T_STRING, T_NS_SEPARATOR);
+					$hintGenerics = $this->fetchGenericParameter();
+					$ws1 = $this->parser->fetchAll(T_WHITESPACE);
+					$variable = $this->parser->fetchAll(T_VARIABLE);
+					$rest = $this->parser->fetchUntil(',', ')');
+
+					$typeValuesCode = NULL; // actual type values for hint
+					if ($hintGenerics) {
+						foreach ($hintGenerics as $typeValue) $typeValuesCode[] = "\\GenericsRegistry::resolveTypeArgument(\$this, '$typeValue')";
+						$typeValuesCode = implode(', ', $typeValuesCode);
+					}
+
+					$hintCode = NULL; // actual hint name
+					if (in_array($hint, $this->currentTypeArgs)) {
+						$hintCode = "\\GenericsRegistry::resolveTypeArgument(\$this, '$hint')";
+						$hint = $ws1 = NULL; // clear real typehint FIXME: if 'E extends Entity', leave 'Entity'
+					} else {
+						$hintCode = "'{$this->fullClass($hint)}'";
+					}
+
+					if ($typeValuesCode || $hintCode) {
+						$methodStartCode .= "\\GenericsRegistry::ensureInstance($variable, $hintCode, array($typeValuesCode));";
+					}
+
+
+					$s .= $hint . $ws1 . $variable . $rest;
+
+					if ($this->parser->isNext(',')) $s .= $this->parser->fetchAll(',', T_WHITESPACE); // comma
 				}
+
+				$s .= $this->parser->fetchAll(')', T_WHITESPACE);
+
+				if ($this->parser->isNext(';')) { // abstract method
+
+				} elseif ($this->parser->isNext('{')) {
+					$s .= $this->parser->fetch() . $methodStartCode;
+				}
+
 
 			} else {
 				$s .= $token;
