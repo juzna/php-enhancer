@@ -154,14 +154,14 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 			} elseif ($this->parser->isCurrent(T_FUNCTION)) {
 				$s .= $token . $this->parser->fetchAll(T_WHITESPACE);
 
-				$name = $this->parser->fetchAll(T_STRING, T_NS_SEPARATOR, T_WHITESPACE);
+				$name = $this->parser->fetchUntil(T_WHITESPACE, '('); // All(T_STRING, T_NS_SEPARATOR);
 				if ($this->parser->isNext('(')) { // it was function name
 					$s .= $name;
 
 				} else { // it was return type function name follows
 					// TODO: store return type somewhere
 
-					$name = $this->parser->fetchAll(T_STRING, T_NS_SEPARATOR, T_WHITESPACE);
+					$name = $this->parser->fetchAll(T_STRING, T_NS_SEPARATOR);
 					$s .= $name;
 
 					assert($this->parser->isNext('('));
