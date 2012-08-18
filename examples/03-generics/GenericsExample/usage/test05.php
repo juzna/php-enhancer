@@ -26,7 +26,7 @@ class Factory<E>
 	}
 
 	public function createCollection(array $ids) {
-		$c = new \Collection<E>();
+		$c = new Collection<E>();
 		foreach ($ids as $id) {
 			$c->add(new E($id));
 		}
@@ -36,5 +36,18 @@ class Factory<E>
 }
 
 $em = new \stdClass();
-$f = new Factory< GenericsExample\ORM\Entity\User>($em);
+$f = new Factory<ORM\Entity\User>($em);
 
+$user = $f->create(99);
+dump($user);
+
+$users = $f->createCollection(array(1, 2, 3));
+dump($users);
+
+$users->add($f->create(4));
+
+try {
+	$users->add(new ORM\Entity\Article(100));
+} catch (\Exception $e) {
+	dump($e->getMessage());
+}
