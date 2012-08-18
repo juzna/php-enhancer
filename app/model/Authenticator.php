@@ -1,12 +1,10 @@
 <?php
 
-use Nette\Security as NS;
-
 
 /**
  * Users authenticator.
  */
-class Authenticator extends Nette\Object implements NS\IAuthenticator
+class Authenticator extends Nette\Object implements Nette\Security\IAuthenticator
 {
 	/** @var Nette\Database\Connection */
 	private $database;

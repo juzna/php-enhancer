@@ -21,6 +21,7 @@ nette:
 
 services:
 	authenticator: Authenticator
+	super: MySuperHelper
 
 
 factories:
