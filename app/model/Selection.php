@@ -1,7 +1,8 @@
 <?php
 use Nette\Database\Connection;
+use Nette\Database\Table\ActiveRow;
 
-class Selection<E> extends \Nette\Database\Table\Selection
+class Selection<E extends ActiveRow> extends \Nette\Database\Table\Selection
 {
 
 	public function __construct(Connection $db) {
