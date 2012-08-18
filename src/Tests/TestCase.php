@@ -20,7 +20,21 @@ class TestCase extends \PHPUnit_Framework_TestCase
 
 
 	/**
-	 * @param $dir
+	 * @param string $dir
+	 * @param string $namespace
+	 */
+	protected function autoloadCompiled($dir, $namespace = '')
+	{
+		// Register autoloader
+		$this->loaders[] = $loader = new \Enhancer\Loaders\CompiledClassLoader();
+		$loader->register(true);
+		$loader->add($namespace, $dir);
+	}
+
+
+
+	/**
+	 * @param string $dir
 	 * @param string $namespace
 	 */
 	protected function enhancerAutoload($dir, $namespace = '')

@@ -10,6 +10,12 @@ namespace Enhancer;
  */
 class EnhancerStream
 {
+
+	/**
+	 * @var bool
+	 */
+	public static $debug = FALSE;
+
 	/**
 	 * @var IEnhancer
 	 */
@@ -45,6 +51,18 @@ class EnhancerStream
 		$this->filename = substr($path, strlen("ehnance://"));
 		$this->buffer = self::$enhancer->enhance(file_get_contents($this->filename));
 		$this->pos = 0;
+
+		if (self::$debug === TRUE) {
+			$tempFile = tempnam(sys_get_temp_dir(), 'PHPEnhancer_');
+			file_put_contents($tempFile, $this->buffer);
+			if ($e = \Enhancer\Utils\PhpSyntax::check($tempFile)) {
+				throw $e;
+
+			} else {
+				@unlink($tempFile);
+			}
+		}
+
 		return true;
 	}
 

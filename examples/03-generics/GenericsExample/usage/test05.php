@@ -1,7 +1,9 @@
 <?php
 
+namespace GenericsExample;
 
-class Collection<E> implements IteratorAggregate
+
+class Collection<E> implements \IteratorAggregate
 {
 	private $items;
 
@@ -12,7 +14,7 @@ class Collection<E> implements IteratorAggregate
 
 	public function getIterator()
 	{
-		return new ArrayIterator($this->items);
+		return new \ArrayIterator($this->items);
 	}
 }
 
@@ -24,7 +26,7 @@ class Factory<E>
 	}
 
 	public function createCollection(array $ids) {
-		$c = new Collection<E>();
+		$c = new \Collection<E>();
 		foreach ($ids as $id) {
 			$c->add(new E($id));
 		}
@@ -33,5 +35,5 @@ class Factory<E>
 
 }
 
-$f = new Factory<ORM\Entity\User>($em);
+$f = new Factory< GenericsExample\ORM\Entity\User>($em);
 

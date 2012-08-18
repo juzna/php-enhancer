@@ -1,6 +1,6 @@
 <?php
 
-namespace ORM\Entity;
+namespace GenericsExample\ORM\Entity;
 
 
 

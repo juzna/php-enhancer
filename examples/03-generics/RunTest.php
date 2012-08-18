@@ -6,13 +6,31 @@ use Nette\Diagnostics\Debugger;
 
 
 
+if (!defined('NETTE')) {
+	require_once __DIR__ . '/../bootstrap.php';
+}
 require_once __DIR__ . '/GenericsEnhancer.php';
 
 /**
  * @author Filip Procházka <filip.prochazka@kdyby.org>
+ *
+ * @runTestsInSeparateProcesses
  */
 class RunTest extends \Tests\TestCase
 {
+
+	/**
+	 * @param \PHPUnit_Framework_TestResult $result
+	 *
+	 * @return \PHPUnit_Framework_TestResult
+	 */
+	public function run(\PHPUnit_Framework_TestResult $result = NULL)
+	{
+		$this->setPreserveGlobalState(false);
+		return parent::run($result);
+	}
+
+
 
 	public function setUp()
 	{
@@ -92,6 +110,43 @@ class RunTest extends \Tests\TestCase
 	/**
 	 * @return array
 	 */
+	public function dataRunUsages_Compiled()
+	{
+		\Enhancer\EnhancerStream::$enhancer = new \GenericsEnhancer();
+		if ($errors = $this->compileUsages()) {
+			return $errors;
+		}
+		$this->autoloadCompiled(__DIR__ . '/output', 'GenericsExample');
+
+		$tests = array();
+		foreach (glob(__DIR__ . '/output/GenericsExample/usage/*.php') as $test) {
+			$tests[basename($test)] = array($test);
+		}
+
+		return $tests;
+	}
+
+
+
+	/**
+	 * @dataProvider dataRunUsages_Compiled
+	 * @param string $usageCase
+	 * @throws \Exception
+	 */
+	public function testRunUsages_Compiled($usageCase)
+	{
+		if ($usageCase instanceof \Exception) {
+			throw $usageCase;
+		}
+
+		$this->runUsage($usageCase);
+	}
+
+
+
+	/**
+	 * @return array
+	 */
 	public function dataRunUsages_Live()
 	{
 		\Enhancer\EnhancerStream::$enhancer = new \GenericsEnhancer();
@@ -122,49 +177,20 @@ class RunTest extends \Tests\TestCase
 
 
 	/**
-	 * @return array
-	 */
-	public function dataRunUsages_Compiled()
-	{
-		\Enhancer\EnhancerStream::$enhancer = new \GenericsEnhancer();
-		$this->compileUsages();
-		$this->enhancerAutoload(__DIR__ . '/output', 'GenericsExample');
-
-		$tests = array();
-		foreach (glob(__DIR__ . '/output/GenericsExample/usage/*.php') as $test) {
-			$tests[basename($test)] = array($test);
-		}
-
-		return $tests;
-	}
-
-
-
-	/**
-	 * @dataProvider dataRunUsages_Compiled
-	 *
-	 * @param string $usageCase
-	 *
-	 * @throws \Exception
-	 */
-	public function testRunUsages_Compiled($usageCase)
-	{
-		$this->runUsage($usageCase);
-	}
-
-
-
-	/**
 	 * @param string $includeFile
+	 *
+	 * @throws \ErrorException
 	 * @throws \Exception
 	 */
 	private function runUsage($includeFile)
 	{
+		\Enhancer\EnhancerStream::$debug = TRUE;
+
 		Debugger::$strictMode = TRUE;
 		Debugger::tryError();
 
 		try {
-			include_once $includeFile;
+			include $includeFile;
 
 		} catch (\Exception $e) {
 		}
@@ -185,6 +211,8 @@ class RunTest extends \Tests\TestCase
 	 */
 	private function compileUsages()
 	{
+		$errors = array();
+
 		$usages = \Nette\Utils\Finder::findFiles("*.php")->from(__DIR__ . '/GenericsExample');
 		foreach ($usages as $file) {
 			/** @var \SplFileInfo $file */
@@ -196,7 +224,13 @@ class RunTest extends \Tests\TestCase
 
 			@mkdir(dirname($outputPath), 0777, true);
 			file_put_contents($outputPath, file_get_contents('enhance://' . $file->getRealPath()));
+
+			if ($e = \Enhancer\Utils\PhpSyntax::check($outputPath)) {
+				$errors[] = array($e);
+			}
 		}
+
+		return $errors;
 	}
 
 

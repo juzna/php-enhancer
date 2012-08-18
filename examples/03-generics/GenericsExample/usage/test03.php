@@ -1,8 +1,5 @@
 <?php
 
-class ArrayHash<Key, Val>
-{
+namespace GenericsExample;
 
-
-
-}
+$hash = new \GenericsExample\Other\ArrayHash();
