@@ -2,14 +2,7 @@
 
 namespace GenericsExample;
 
-use Nette\Diagnostics\Debugger;
 
-
-
-if (!defined('NETTE')) {
-	require_once __DIR__ . '/../bootstrap.php';
-}
-require_once __DIR__ . '/GenericsEnhancer.php';
 
 /**
  * @author Filip Procházka <filip.prochazka@kdyby.org>
@@ -18,19 +11,6 @@ require_once __DIR__ . '/GenericsEnhancer.php';
  */
 class RunTest extends \Tests\TestCase
 {
-
-	/**
-	 * @param \PHPUnit_Framework_TestResult $result
-	 *
-	 * @return \PHPUnit_Framework_TestResult
-	 */
-	public function run(\PHPUnit_Framework_TestResult $result = NULL)
-	{
-		$this->setPreserveGlobalState(false);
-		return parent::run($result);
-	}
-
-
 
 	public function setUp()
 	{
@@ -59,38 +39,6 @@ class RunTest extends \Tests\TestCase
 		}
 
 		return $allCases;
-	}
-
-
-
-	/**
-	 * @param string $file
-	 *
-	 * @throws \Nette\InvalidStateException
-	 * @return array
-	 */
-	private static function parseCompilerTestFile($file)
-	{
-		$cases = $case = array();
-		foreach (explode('<?php', file_get_contents($file)) as $part) {
-			if (substr($part, 0, 2) === '#e') {
-				list($input) = explode('?>', substr($part, 2), 2);
-				$case[0] = '<?php' . $input;
-
-			} elseif (substr($part, 0, 2) === '#c') {
-				list($output) = explode('?>', substr($part, 2), 2);
-				$case[1] = '<?php' . $output;
-
-				if (!isset($case[0])) {
-					throw new \Nette\InvalidStateException("Invalid test file"); // todo: verbose?
-				}
-
-				$cases[basename($file) . '#' . count($cases)] = $case;
-				$case = array();
-			}
-		}
-
-		return $cases;
 	}
 
 
@@ -139,7 +87,8 @@ class RunTest extends \Tests\TestCase
 			throw $usageCase;
 		}
 
-		$this->runUsage($usageCase);
+		\Enhancer\EnhancerStream::$debug = TRUE;
+		$this->safelyIncludeFile($usageCase);
 	}
 
 
@@ -171,37 +120,8 @@ class RunTest extends \Tests\TestCase
 	 */
 	public function testRunUsages_Live($usageCase)
 	{
-		$this->runUsage("enhance://$usageCase");
-	}
-
-
-
-	/**
-	 * @param string $includeFile
-	 *
-	 * @throws \ErrorException
-	 * @throws \Exception
-	 */
-	private function runUsage($includeFile)
-	{
 		\Enhancer\EnhancerStream::$debug = TRUE;
-
-		Debugger::$strictMode = TRUE;
-		Debugger::tryError();
-
-		try {
-			include $includeFile;
-
-		} catch (\Exception $e) {
-		}
-
-		if (Debugger::catchError($error)) {
-			/** @var \ErrorException  $error */
-			throw $error;
-
-		} elseif (isset($e)) {
-			throw $e;
-		}
+		$this->safelyIncludeFile("enhance://$usageCase");
 	}
 
 
@@ -209,7 +129,7 @@ class RunTest extends \Tests\TestCase
 	/**
 	 * Crawls the GenericsExample directory and translates all the files.
 	 */
-	private function compileUsages()
+	private static function compileUsages()
 	{
 		$errors = array();
 
@@ -250,3 +170,8 @@ class RunTest extends \Tests\TestCase
 	}
 
 }
+
+if (!defined('NETTE')) {
+	require_once __DIR__ . '/../bootstrap.php';
+}
+require_once __DIR__ . '/GenericsEnhancer.php';

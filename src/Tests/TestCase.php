@@ -3,6 +3,7 @@
 namespace Tests;
 
 use Nette;
+use Nette\Diagnostics\Debugger;
 
 
 
@@ -16,6 +17,19 @@ class TestCase extends \PHPUnit_Framework_TestCase
 	 * @var \Enhancer\Loaders\ClassLoader
 	 */
 	private $loaders = array();
+
+
+
+	/**
+	 * @param \PHPUnit_Framework_TestResult $result
+	 *
+	 * @return \PHPUnit_Framework_TestResult
+	 */
+	public function run(\PHPUnit_Framework_TestResult $result = NULL)
+	{
+		$this->setPreserveGlobalState(false);
+		return parent::run($result);
+	}
 
 
 
@@ -65,6 +79,66 @@ class TestCase extends \PHPUnit_Framework_TestCase
 	public function tearDown()
 	{
 		while ($this->unregisterLoader());
+	}
+
+
+
+	/**
+	 * @param string $file
+	 *
+	 * @throws \Nette\InvalidStateException
+	 * @return array
+	 */
+	protected static function parseCompilerTestFile($file)
+	{
+		$cases = $case = array();
+		foreach (explode('<?php', file_get_contents($file)) as $part) {
+			if (substr($part, 0, 2) === '#e') {
+				list($input) = explode('?>', substr($part, 2), 2);
+				$case[0] = '<?php' . $input;
+
+			} elseif (substr($part, 0, 2) === '#c') {
+				list($output) = explode('?>', substr($part, 2), 2);
+				$case[1] = '<?php' . $output;
+
+				if (!isset($case[0])) {
+					throw new \Nette\InvalidStateException("Invalid test file"); // todo: verbose?
+				}
+
+				$cases[basename($file) . '#' . count($cases)] = $case;
+				$case = array();
+			}
+		}
+
+		return $cases;
+	}
+
+
+
+	/**
+	 * @param string $includeFile
+	 *
+	 * @throws \ErrorException
+	 * @throws \Exception
+	 */
+	protected static function safelyIncludeFile($includeFile)
+	{
+		Debugger::$strictMode = TRUE;
+		Debugger::tryError();
+
+		try {
+			include $includeFile;
+
+		} catch (\Exception $e) {
+		}
+
+		if (Debugger::catchError($error)) {
+			/** @var \ErrorException  $error */
+			throw $error;
+
+		} elseif (isset($e)) {
+			throw $e;
+		}
 	}
 
 }
