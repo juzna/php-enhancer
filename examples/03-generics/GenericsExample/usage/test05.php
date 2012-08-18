@@ -21,6 +21,8 @@ class Collection<E> implements \IteratorAggregate
 
 class Factory<E>
 {
+	public function __construct($em) { }
+
 	public function create($id) {
 		return new E($id);
 	}
