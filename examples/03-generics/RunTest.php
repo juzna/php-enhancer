@@ -54,11 +54,11 @@ class RunTest extends \Tests\TestCase
 		foreach (explode('<?php', file_get_contents($file)) as $part) {
 			if (substr($part, 0, 2) === '#e') {
 				list($input) = explode('?>', substr($part, 2), 2);
-				$case[0] = $input;
+				$case[0] = '<?php' . $input;
 
 			} elseif (substr($part, 0, 2) === '#c') {
 				list($output) = explode('?>', substr($part, 2), 2);
-				$case[1] = $output;
+				$case[1] = '<?php' . $output;
 
 				if (!isset($case[0])) {
 					throw new \Nette\InvalidStateException("Invalid test file"); // todo: verbose?
@@ -79,8 +79,9 @@ class RunTest extends \Tests\TestCase
 	 */
 	public function testCompiledOutput_testsDirectory($input, $expectedOutput)
 	{
-		$enhancer = \Enhancer\EnhancerStream::$enhancer;
-		$this->assertSame($expectedOutput, $enhancer->enhance($input));
+		$enhancer = new \GenericsEnhancer();
+		$output = $enhancer->enhance($input);
+		$this->assertSame($expectedOutput, $output);
 	}
 
 
