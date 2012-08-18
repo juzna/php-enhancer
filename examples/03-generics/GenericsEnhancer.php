@@ -158,8 +158,6 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 			}
 		}
 
-//		dump($s);
-
 		return $s;
 	}
 
@@ -492,3 +490,22 @@ class TypeValue extends TypeArgument
 
 }
 
+
+
+/**
+ * @author Filip Procházka <filip.prochazka@kdyby.org>
+ */
+class ClassType extends Nette\Reflection\ClassType
+{
+
+}
+
+
+
+/**
+ * @author Filip Procházka <filip.prochazka@kdyby.org>
+ */
+class Method extends Nette\Reflection\Method
+{
+
+}
