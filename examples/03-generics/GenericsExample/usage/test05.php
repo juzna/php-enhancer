@@ -35,5 +35,6 @@ class Factory<E>
 
 }
 
+$em = new \stdClass();
 $f = new Factory< GenericsExample\ORM\Entity\User>($em);
 
