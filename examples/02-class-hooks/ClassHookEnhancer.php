@@ -17,8 +17,11 @@ class ClassHookEnhancer implements \Enhancer\IEnhancer
 		while (($token = $parser->fetch()) !== FALSE) {
 			if ($parser->isCurrent(T_NAMESPACE)) {
 				$namespace = (string) $parser->fetchAll(T_STRING, T_NS_SEPARATOR);
+				$s .= $token . ' ' . $namespace;
 				if ($parser->fetch(';', '{') === '{') {
 					$s .= '{';
+				} else {
+					$s .= ';';
 				}
 
 			} elseif ($parser->isCurrent(T_USE)) {
@@ -67,4 +70,29 @@ class ClassHookEnhancer implements \Enhancer\IEnhancer
 		return $s;
 	}
 
+}
+
+
+
+/**
+ * @author Jan Dolecek <juzna.cz@gmail.com>
+ */
+class ClassHookHelper
+{
+
+	public static function newInstance($className /*, $args */)
+	{
+		$args = func_get_args();
+		array_shift($args);
+		$cnt = count($args);
+
+		echo "LOG: Creating instance of '$className' with $cnt arguments\n";
+
+		$refl = new ReflectionClass($className);
+		$ret = $refl->newInstanceArgs($args);
+
+		echo "LOG: ... done\n";
+
+		return $ret;
+	}
 }

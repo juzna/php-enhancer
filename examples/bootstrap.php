@@ -3,6 +3,7 @@
 /** @var \Composer\Autoload\ClassLoader $loader */
 $loader = require_once __DIR__ . '/../vendor/autoload.php';
 $loader->add('Enhancer', __DIR__ . '/../src/');
+$loader->add('Tests', __DIR__ . '/../src/');
 
 // allow dump()
 Nette\Diagnostics\Debugger::$strictMode = TRUE;

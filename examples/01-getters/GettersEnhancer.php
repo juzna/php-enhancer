@@ -1,5 +1,7 @@
 <?php
 
+
+
 /**
  * Converts #attr(foo) into getter and setter method
  *
