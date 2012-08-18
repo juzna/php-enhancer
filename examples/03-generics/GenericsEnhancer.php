@@ -149,7 +149,7 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 				}
 
 				$s .= $this->parser->fetch(); // fetch (
-				while ($hint = $this->parser->fetchUntil(T_VARIABLE)) {
+				while ($hint = $this->parser->fetchUntil(T_VARIABLE, ')')) {
 
 				}
 
