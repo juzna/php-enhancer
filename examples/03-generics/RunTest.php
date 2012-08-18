@@ -4,6 +4,11 @@ namespace GenericsExample;
 
 
 
+if (!defined('NETTE')) {
+	require_once __DIR__ . '/../bootstrap.php';
+}
+require_once __DIR__ . '/GenericsEnhancer.php';
+
 /**
  * @author Filip Procházka <filip.prochazka@kdyby.org>
  *
@@ -170,8 +175,3 @@ class RunTest extends \Tests\TestCase
 	}
 
 }
-
-if (!defined('NETTE')) {
-	require_once __DIR__ . '/../bootstrap.php';
-}
-require_once __DIR__ . '/GenericsEnhancer.php';
