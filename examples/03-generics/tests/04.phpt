@@ -33,7 +33,7 @@ class Repository<E>
 {public function getParametrizedType($parameterName) { return \GenericsRegistry::getParametrizedTypesForObject($this); }
 	function foo($foo)
 	{
-		return $foo instanceof Foo && \GenericsRegistry::checkInstance($foo, 'Foo', array(\GenericsRegistry::newInstance(\GenericsRegistry::resolveTypeArgument($this, 'E'))));
+		return $foo instanceof Foo && \GenericsRegistry::checkInstance($foo, 'Foo', array(\GenericsRegistry::resolveTypeArgument($this, 'E')));
 	}
 }
 ?>

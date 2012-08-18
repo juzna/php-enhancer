@@ -174,12 +174,12 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 
 					$typeValuesCode = NULL; // actual type values for hint
 					if ($hintGenerics) {
-						foreach ($hintGenerics as $typeValue) $typeValuesCode[] = "\\GenericsRegistry::resolveTypeArgument(\$this, '$typeValue')";
+						foreach ($hintGenerics as $typeValue) $typeValuesCode[] = ($this->currentTypeArgs && in_array($typeValue, $this->currentTypeArgs)) ? "\\GenericsRegistry::resolveTypeArgument(\$this, '$typeValue')" : "'{$this->fullClass($typeValue)}'";
 						$typeValuesCode = implode(', ', $typeValuesCode);
 					}
 
 					$hintCode = NULL; // actual hint name
-					if (in_array($hint, $this->currentTypeArgs)) {
+					if ($this->currentTypeArgs && in_array($hint, $this->currentTypeArgs)) {
 						$hintCode = "\\GenericsRegistry::resolveTypeArgument(\$this, '$hint')";
 						$hint = $ws1 = NULL; // clear real typehint FIXME: if 'E extends Entity', leave 'Entity'
 					}
@@ -203,6 +203,32 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 					$s .= $this->parser->fetch() . $methodStartCode;
 				}
 
+
+			} elseif ($this->parser->isCurrent(T_VARIABLE) && $this->parser->isNext(T_INSTANCEOF)) {
+				$variable = $token;
+				$ws = $this->parser->fetchAll(T_WHITESPACE, T_INSTANCEOF);
+				$className = $this->parser->fetchAll(T_STRING, T_NS_SEPARATOR);
+				$fullClassName = $this->fullClass($className);
+				$generics = $this->fetchGenericParameter();
+				$additionalCode = NULL;
+
+				$typeValuesCode = NULL; // actual (resolved) type values
+				if ($generics) {
+					foreach ($generics as $typeValue) $typeValuesCode[] = ($this->currentTypeArgs && in_array($typeValue, $this->currentTypeArgs)) ? "\\GenericsRegistry::resolveTypeArgument(\$this, '$typeValue')" : "'{$this->fullClass($typeValue)}'";
+					$typeValuesCode = implode(', ', $typeValuesCode);
+				}
+
+				$classNameCode = NULL; // actual hint name
+				if ($this->currentTypeArgs && in_array($className, $this->currentTypeArgs)) {
+					$classNameCode = "\\GenericsRegistry::resolveTypeArgument(\$this, '$fullClassName')";
+				}
+
+				if ($classNameCode || $typeValuesCode) {
+					if ( ! $classNameCode) $classNameCode = "'$fullClassName'";
+					$additionalCode .= " && \\GenericsRegistry::checkInstance($variable, $classNameCode, array($typeValuesCode))";
+				}
+
+				$s .= $variable . $ws . $className . $additionalCode;
 
 			} else {
 				$s .= $token;
