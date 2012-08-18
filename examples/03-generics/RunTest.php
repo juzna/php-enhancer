@@ -64,7 +64,7 @@ class RunTest extends \Tests\TestCase
 					throw new \Nette\InvalidStateException("Invalid test file"); // todo: verbose?
 				}
 
-				$cases[] = $case;
+				$cases[basename($file) . '#' . count($cases)] = $case;
 				$case = array();
 			}
 		}
