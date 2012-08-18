@@ -109,24 +109,28 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 
 			} elseif ($this->parser->isCurrent(T_CLASS)) { // todo: abstract, final & interface
 				$registration = NULL;
+				// $classDef: 'class ', name, 'extends ', extends, 'implements ', implements, '{', generated-methods
 				$classDef = array(
-					$token . $this->parser->fetchAll(T_WHITESPACE), NULL, NULL, NULL,
+					$token . $this->parser->fetchAll(T_WHITESPACE), NULL, NULL, NULL, NULL, NULL, NULL
 				);
-				$classDef[1] .= $className = $this->parser->fetchAll(T_STRING, T_NS_SEPARATOR);
+				$classDef[1] = $className = $this->parser->fetchAll(T_STRING, T_NS_SEPARATOR);
 				$generics = $this->currentTypeArgs = $this->fetchGenericParameter();
 				if ($this->parser->isNext(T_EXTENDS)) {
-					$classDef[2] .= $this->parser->fetch() . $this->parser->fetchAll(T_STRING, T_NS_SEPARATOR);
+					$classDef[2] = $this->parser->fetchAll(T_WHITESPACE, T_EXTENDS);
+					$classDef[3] = $this->parser->fetchAll(T_STRING, T_NS_SEPARATOR);
 				}
 				if ($this->parser->isNext(T_IMPLEMENTS)) {
-					$classDef[3] .= $this->parser->fetch() . $this->parser->fetchAll(T_STRING, T_NS_SEPARATOR);
+					$classDef[4] = $this->parser->fetchAll(T_WHITESPACE, T_IMPLEMENTS);
+					$classDef[5] = $this->parser->fetchAll(T_STRING, T_NS_SEPARATOR);
 				}
 				if ($generics) {
-					$classDef[3] .= (!$classDef[3] ? ' implements ' : ', ') . '\GenericType';
+					if (!$classDef[4]) $classDef[4] = ' implements ';
+					$classDef[5] .= ($classDef[5] ? ', ' : '') . '\GenericType ';
 				}
 
-				$classDef[4] = $this->parser->fetchAll('{'); // start class
+				$classDef[6] = $this->parser->fetchAll('{'); // start class
 
-				$classDef[5] = $generics ? 'public function getParametrizedType($parameterName) { return "TODO"; }' : '';
+				$classDef[7] = $generics ? 'public function getParametrizedType($parameterName) { return "TODO"; }' : '';
 
 				$s .= '\\GenericsRegistry::registerClass(\'' .
 					$this->fullClass($className) . '\', array(\'' .
@@ -400,7 +404,7 @@ class GenericsRegistry
 			$val = $rawTypeValues[$k];
 
 			if ( ! $val instanceof TypeValue) { // string -> TypeValue
-				TypeValue::create($typeArgument, $val);
+				TypeValue::createValue($typeArgument, $val);
 
 			} else { // validate TypeValue to match
 				// TODO
@@ -476,7 +480,7 @@ class TypeValue extends TypeArgument
 
 
 
-	public static function create(TypeArgument $arg, $actualClass)
+	public static function createValue(TypeArgument $arg, $actualClass)
 	{
 		if ( ! $arg->matches($actualClass)) throw new InvalidArgumentException("Incompatible type");
 
