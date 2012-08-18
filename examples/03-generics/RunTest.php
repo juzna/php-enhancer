@@ -69,7 +69,6 @@ class RunTest extends \Tests\TestCase
 		if ($errors = $this->compileUsages()) {
 			return $errors;
 		}
-		$this->autoloadCompiled(__DIR__ . '/output', 'GenericsExample');
 
 		$tests = array();
 		foreach (glob(__DIR__ . '/output/GenericsExample/usage/*.php') as $test) {
@@ -93,6 +92,8 @@ class RunTest extends \Tests\TestCase
 		}
 
 		\Enhancer\EnhancerStream::$debug = TRUE;
+
+		$this->autoloadCompiled(__DIR__ . '/output', 'GenericsExample');
 		$this->safelyIncludeFile($usageCase);
 	}
 
@@ -104,7 +105,6 @@ class RunTest extends \Tests\TestCase
 	public function dataRunUsages_Live()
 	{
 		\Enhancer\EnhancerStream::$enhancer = new \GenericsEnhancer();
-		$this->enhancerAutoload(__DIR__, 'GenericsExample');
 
 		$tests = array();
 		foreach (glob(__DIR__ . '/GenericsExample/usage/*.php') as $test) {
@@ -126,6 +126,8 @@ class RunTest extends \Tests\TestCase
 	public function testRunUsages_Live($usageCase)
 	{
 		\Enhancer\EnhancerStream::$debug = TRUE;
+
+		$this->enhancerAutoload(__DIR__, 'GenericsExample');
 		$this->safelyIncludeFile("enhance://$usageCase");
 	}
 

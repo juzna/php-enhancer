@@ -12,6 +12,6 @@ $loader->add('GenericsExample', __DIR__);
 //$file = $argv[1];
 //echo "Running file $file\n";
 
-include 'enhance://' . __DIR__ . '/GenericsExample/usage/test05.php';
-//include __DIR__ . '/output/GenericsExample/usage/test05.php';
+//include 'enhance://' . __DIR__ . '/GenericsExample/usage/test01.php';
+//include __DIR__ . '/output/GenericsExample/usage/test01.php';
 

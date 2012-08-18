@@ -127,10 +127,8 @@ class TestCase extends \PHPUnit_Framework_TestCase
 		Debugger::tryError();
 
 		try {
-			include $includeFile;
-
-		} catch (\Exception $e) {
-		}
+			Nette\Utils\LimitedScope::load($includeFile);
+		} catch (\Exception $e) { }
 
 		if (Debugger::catchError($error)) {
 			/** @var \ErrorException  $error */
