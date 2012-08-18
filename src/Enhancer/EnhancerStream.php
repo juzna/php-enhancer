@@ -102,4 +102,12 @@ class EnhancerStream
 		return $this->pos >= strlen($this->buffer);
 	}
 
+
+
+	/***/
+	public function url_stat($path, $flags)
+	{
+		return $this->stream_stat();
+	}
+
 }
