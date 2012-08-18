@@ -370,7 +370,7 @@ class GenericsRegistry
 		array_shift($args); // genericTypes
 
 		$obj = $refl->newInstanceArgs($args);
-		self::$instances[spl_object_hash($obj)] = $typeValues;
+		if ($typeValues !== NULL) self::$instances[spl_object_hash($obj)] = $typeValues;
 
 		return $obj;
 	}
@@ -448,7 +448,9 @@ class GenericsRegistry
 		if ( ! $typeValues = self::getParametrizedTypesForObject($object)) throw new InvalidArgumentException("Object has no type-values");
 		if ( ! isset($typeValues[$typeArgumentName])) throw new InvalidArgumentException("Object does not have type-value named '$typeArgumentName'");
 
-		return $typeValues[$typeArgumentName]->actualClass;
+		// FIXME
+		$x = $typeValues[$typeArgumentName];
+		return is_scalar($x) ? $x : $x->actualClass;
 	}
 
 
@@ -463,11 +465,14 @@ class GenericsRegistry
 	 * @param string[]|TypeValue[] $rawTypeValues
 	 * @return TypeValue[]  typeArgumentName => TypeValue
 	 */
-	protected static function resolveTypeValues($className, $rawTypeValues)
+	protected static function resolveTypeValues($className, array $rawTypeValues = NULL)
 	{
 		$className = strtolower($className);
 
-		if( ! isset(self::$classes[$className])) throw new InvalidArgumentException("Class '$className' is not generic");
+		if( ! isset(self::$classes[$className])) {
+			if ($rawTypeValues) throw new InvalidArgumentException("Class '$className' is not generic");
+			else return NULL;
+		}
 		$typeArguments = self::$classes[$className];
 
 		if(count($typeArguments) !== count($rawTypeValues)) throw new InvalidArgumentException("Generic values do not mach generic arguments");
