@@ -160,15 +160,29 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 				while ( ! $this->parser->isNext(')')) {
 					// hint, whitespace, variable, default value
 					$hint = $this->parser->fetchAll(T_STRING, T_NS_SEPARATOR);
+					$hintGenerics = $this->fetchGenericParameter();
 					$ws1 = $this->parser->fetchAll(T_WHITESPACE);
 					$variable = $this->parser->fetchAll(T_VARIABLE);
 					$rest = $this->parser->fetchUntil(',', ')');
 
-					if (in_array($hint, $this->currentTypeArgs)) {
-						$methodStartCode .= "\\GenericsRegistry::ensureInstance($variable, \\GenericsRegistry::resolveTypeArgument(\$this, '$hint'), array());";
-
-						$hint = $ws1 = NULL; // clear real typehint FIXME: if 'E extends Entity', leave 'Entity'
+					$typeValuesCode = NULL; // actual type values for hint
+					if ($hintGenerics) {
+						foreach ($hintGenerics as $typeValue) $typeValuesCode[] = "\\GenericsRegistry::resolveTypeArgument(\$this, '$typeValue')";
+						$typeValuesCode = implode(', ', $typeValuesCode);
 					}
+
+					$hintCode = NULL; // actual hint name
+					if (in_array($hint, $this->currentTypeArgs)) {
+						$hintCode = "\\GenericsRegistry::resolveTypeArgument(\$this, '$hint')";
+						$hint = $ws1 = NULL; // clear real typehint FIXME: if 'E extends Entity', leave 'Entity'
+					} else {
+						$hintCode = "'{$this->fullClass($hint)}'";
+					}
+
+					if ($typeValuesCode || $hintCode) {
+						$methodStartCode .= "\\GenericsRegistry::ensureInstance($variable, $hintCode, array($typeValuesCode));";
+					}
+
 
 					$s .= $hint . $ws1 . $variable . $rest;
 
