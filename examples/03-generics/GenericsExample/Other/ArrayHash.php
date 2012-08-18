@@ -4,7 +4,7 @@ namespace GenericsExample\Other;
 
 
 
-class ArrayHash<Key, Val >
+class ArrayHash<Key, Val>
 {
 
 }
