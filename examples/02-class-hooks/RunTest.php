@@ -4,6 +4,8 @@ namespace ClassHookExample;
 
 
 
+require_once __DIR__ . '/ClassHookEnhancer.php';
+
 /**
  * @author Filip Procházka <filip.prochazka@kdyby.org>
  */
@@ -12,7 +14,6 @@ class RunTest extends \Tests\TestCase
 
 	public function setUp()
 	{
-		require_once __DIR__ . '/ClassHookEnhancer.php';
 		\Enhancer\EnhancerStream::$enhancer = new \ClassHookEnhancer();
 		$this->enhancerAutoload(__DIR__ , 'ClassHookExample');
 	}

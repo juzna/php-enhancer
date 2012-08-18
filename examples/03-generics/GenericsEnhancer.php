@@ -285,14 +285,8 @@ class GenericsRegistry
 		$args = func_get_args();
 		array_shift($args); // className
 		array_shift($args); // genericTypes
-		$cnt = count($args);
-
-		echo "LOG: Creating instance of '$className' with $cnt arguments\n";
 
 		$obj = $refl->newInstanceArgs($args);
-
-		echo "LOG: ... done\n";
-
 		self::$instances[spl_object_hash($obj)] = $typeValues;
 
 		return $obj;
@@ -324,8 +318,6 @@ class GenericsRegistry
 	{
 		$x = array();
 		foreach ($typeArguments as $arg) $x[] = TypeArgument::create($arg);
-
-		echo "LOG: registering class $className\n";
 
 		self::$classes[strtolower($className)] = $x;
 	}

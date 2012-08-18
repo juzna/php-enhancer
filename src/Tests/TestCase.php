@@ -15,7 +15,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
 	/**
 	 * @var \Enhancer\Loaders\ClassLoader
 	 */
-	private $loader;
+	private $loaders = array();
 
 
 
@@ -26,18 +26,31 @@ class TestCase extends \PHPUnit_Framework_TestCase
 	protected function enhancerAutoload($dir, $namespace = '')
 	{
 		// Register autoloader
-		$this->loader = new \Enhancer\Loaders\ClassLoader;
-		$this->loader->register(true);
-		$this->loader->add($namespace, $dir);
+		$this->loaders[] = $loader = new \Enhancer\Loaders\ClassLoader;
+		$loader->register(true);
+		$loader->add($namespace, $dir);
+	}
+
+
+
+	/**
+	 * @return \Enhancer\Loaders\ClassLoader|mixed
+	 */
+	protected function unregisterLoader()
+	{
+		if ($loader = array_pop($this->loaders)) {
+			/** @var \Enhancer\Loaders\ClassLoader $loader */
+			$loader->unregister();
+		}
+
+		return $loader;
 	}
 
 
 
 	public function tearDown()
 	{
-		if ($this->loader) {
-			$this->loader->unregister();
-		}
+		while ($this->unregisterLoader());
 	}
 
 }

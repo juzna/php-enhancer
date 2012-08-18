@@ -2,7 +2,11 @@
 
 namespace GenericsExample;
 
+use Nette\Diagnostics\Debugger;
 
+
+
+require_once __DIR__ . '/GenericsEnhancer.php';
 
 /**
  * @author Filip Procházka <filip.prochazka@kdyby.org>
@@ -12,7 +16,6 @@ class RunTest extends \Tests\TestCase
 
 	public function setUp()
 	{
-		require_once __DIR__ . '/GenericsEnhancer.php';
 		\Enhancer\EnhancerStream::$enhancer = new \GenericsEnhancer();
 	}
 
@@ -86,28 +89,93 @@ class RunTest extends \Tests\TestCase
 
 
 
-	public function testRunUsages()
+	/**
+	 * @return array
+	 */
+	public function dataRunUsages_Live()
 	{
-		$this->compileUsages();
-		$this->fail();
-
-		$this->enhancerAutoload(__DIR__ . '/output', 'GenericsExample');
+		\Enhancer\EnhancerStream::$enhancer = new \GenericsEnhancer();
 		$this->enhancerAutoload(__DIR__, 'GenericsExample');
 
-		echo "Running tests... \n";
-
-		foreach (glob(__DIR__ . '/usage/*.php') as $test) {
-			echo "- running ", basename($test), "\n\n";
-
-			if (RUN_TRANSLATED) {
-				include_once __DIR__ . '/output/' . substr($test, strlen(__DIR__) + 1);
-
-			} else {
-				include_once "enhance://$test";
-			}
+		$tests = array();
+		foreach (glob(__DIR__ . '/GenericsExample/usage/*.php') as $test) {
+			$tests[basename($test)] = array($test);
 		}
 
-		echo "\n\n", "done", "\n";
+		return $tests;
+	}
+
+
+
+	/**
+	 * @dataProvider dataRunUsages_Live
+	 *
+	 * @param string $usageCase
+	 *
+	 * @throws \Exception
+	 */
+	public function testRunUsages_Live($usageCase)
+	{
+		$this->runUsage("enhance://$usageCase");
+	}
+
+
+
+	/**
+	 * @return array
+	 */
+	public function dataRunUsages_Compiled()
+	{
+		\Enhancer\EnhancerStream::$enhancer = new \GenericsEnhancer();
+		$this->compileUsages();
+		$this->enhancerAutoload(__DIR__ . '/output', 'GenericsExample');
+
+		$tests = array();
+		foreach (glob(__DIR__ . '/output/GenericsExample/usage/*.php') as $test) {
+			$tests[basename($test)] = array($test);
+		}
+
+		return $tests;
+	}
+
+
+
+	/**
+	 * @dataProvider dataRunUsages_Compiled
+	 *
+	 * @param string $usageCase
+	 *
+	 * @throws \Exception
+	 */
+	public function testRunUsages_Compiled($usageCase)
+	{
+		$this->runUsage($usageCase);
+	}
+
+
+
+	/**
+	 * @param string $includeFile
+	 * @throws \Exception
+	 */
+	private function runUsage($includeFile)
+	{
+		Debugger::$strictMode = TRUE;
+		Debugger::tryError();
+
+		try {
+			include_once $includeFile;
+
+		} catch (\Exception $e) {
+		}
+
+		if (Debugger::catchError($error)) {
+			/** @var \ErrorException  $error */
+			throw $error;
+
+		} elseif (isset($e)) {
+			throw $e;
+		}
 	}
 
 
@@ -115,7 +183,7 @@ class RunTest extends \Tests\TestCase
 	/**
 	 * Crawls the GenericsExample directory and translates all the files.
 	 */
-	protected function compileUsages()
+	private function compileUsages()
 	{
 		$usages = \Nette\Utils\Finder::findFiles("*.php")->from(__DIR__ . '/GenericsExample');
 		foreach ($usages as $file) {
@@ -141,7 +209,7 @@ class RunTest extends \Tests\TestCase
 	 */
 	private static function isFresh(\SplFileInfo $file, $outputPath)
 	{
-		$enhancerRefl = new \ReflectionClass(\Enhancer\EnhancerStream::$enhancer);
+		$enhancerRefl = new \ReflectionClass('GenericsEnhancer');
 		return file_exists($outputPath)
 			&& filemtime($outputPath) > filemtime($file->getRealPath())
 			&& filemtime($outputPath) > filemtime($enhancerRefl->getFileName());

@@ -4,6 +4,8 @@ namespace GettersExample;
 
 
 
+require_once __DIR__ . '/GettersEnhancer.php';
+
 /**
  * @author Filip Procházka <filip.prochazka@kdyby.org>
  */
@@ -12,7 +14,6 @@ class RunTest extends \Tests\TestCase
 
 	public function setUp()
 	{
-		require_once __DIR__ . '/GettersEnhancer.php';
 		\Enhancer\EnhancerStream::$enhancer = new \GettersEnhancer();
 		$this->enhancerAutoload(__DIR__, 'GettersExample');
 	}
