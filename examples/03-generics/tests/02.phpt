@@ -40,7 +40,7 @@ class Factory<E>
 ?>
 <?php#c
 \GenericsRegistry::registerClass('Collection', array('E'));class Factory implements \GenericType
-{public function getParametrizedType($parameterName) { return "TODO"; }
+{public function getParametrizedType($parameterName) { return \GenericsRegistry::getParametrizedTypesForObject($this); }
 	function create($id)
 	{
 		return \GenericsRegistry::newInstance(\GenericsRegistry::resolveTypeArgument($this, 'E'), NULL, $id);
@@ -62,7 +62,7 @@ class Factory<E>
 ?>
 <?php#c
 \GenericsRegistry::registerClass('Factory', array('E')); class Factory implements \GenericType
-{public function getParametrizedType($parameterName) { return "TODO"; }
+{public function getParametrizedType($parameterName) { return \GenericsRegistry::getParametrizedTypesForObject($this); }
 	public function createCollection($ids) {
 		return \GenericsRegistry::newInstance('Collection', array(\GenericsRegistry::resolveTypeArgument($this, 'E')), $ids[0], $ids[1]);
 	}

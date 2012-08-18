@@ -3,7 +3,7 @@ simple generic class, oneline
 class Collection<E> { }
 ?>
 <?php#c
-\GenericsRegistry::registerClass('Collection', array('E'));class Collection implements \GenericType {public function getParametrizedType($parameterName) { return "TODO"; } }
+\GenericsRegistry::registerClass('Collection', array('E'));class Collection implements \GenericType {public function getParametrizedType($parameterName) { return \GenericsRegistry::getParametrizedTypesForObject($this); } }
 ?>
 ------------------------------------------------j-d--
 
@@ -16,7 +16,7 @@ class Collection<E>
 ?>
 <?php#c
 \GenericsRegistry::registerClass('Collection', array('E'));class Collection implements \GenericType
-{public function getParametrizedType($parameterName) { return "TODO"; }
+{public function getParametrizedType($parameterName) { return \GenericsRegistry::getParametrizedTypesForObject($this); }
 	function foo() { }
 }
 ?>
@@ -31,7 +31,7 @@ class Collection<E> implements IteratorAggregate
 ?>
 <?php#c
 \GenericsRegistry::registerClass('Collection', array('E'));class Collection implements IteratorAggregate, \GenericType
-{public function getParametrizedType($parameterName) { return "TODO"; }
+{public function getParametrizedType($parameterName) { return \GenericsRegistry::getParametrizedTypesForObject($this); }
 	function foo() { }
 }
 ?>
@@ -46,7 +46,7 @@ class Collection<E> extends \Nette\Object
 ?>
 <?php#c
 \GenericsRegistry::registerClass('Collection', array('E'));class Collection extends \Nette\Object implements \GenericType
-{public function getParametrizedType($parameterName) { return "TODO"; }
+{public function getParametrizedType($parameterName) { return \GenericsRegistry::getParametrizedTypesForObject($this); }
 	function foo() { }
 }
 ?>
@@ -61,7 +61,7 @@ class Collection<E> extends \Nette\Object implements IteratorAggregate
 ?>
 <?php#c
 \GenericsRegistry::registerClass('Collection', array('E'));class Collection extends \Nette\Object implements IteratorAggregate, \GenericType
-{public function getParametrizedType($parameterName) { return "TODO"; }
+{public function getParametrizedType($parameterName) { return \GenericsRegistry::getParametrizedTypesForObject($this); }
 	function foo() { }
 }
 ?>

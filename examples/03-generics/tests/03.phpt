@@ -15,7 +15,7 @@ class Repository<E> extends BaseRepository
 ?>
 <?php#c
 \GenericsRegistry::registerClass('Repository', array('E'));class Repository extends BaseRepository implements \GenericType
-{public function getParametrizedType($parameterName) { return "TODO"; }
+{public function getParametrizedType($parameterName) { return \GenericsRegistry::getParametrizedTypesForObject($this); }
 	function saveOne($item)
 	{\GenericsRegistry::ensureInstance($item, \GenericsRegistry::resolveTypeArgument($this, 'E'), array());
 		return true;

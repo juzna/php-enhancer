@@ -130,7 +130,7 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 
 				$classDef[6] = $this->parser->fetchAll('{'); // start class
 
-				$classDef[7] = $generics ? 'public function getParametrizedType($parameterName) { return "TODO"; }' : '';
+				$classDef[7] = $generics ? 'public function getParametrizedType($parameterName) { return \GenericsRegistry::getParametrizedTypesForObject($this); }' : '';
 
 				$s .= '\\GenericsRegistry::registerClass(\'' .
 					$this->fullClass($className) . '\', array(\'' .
