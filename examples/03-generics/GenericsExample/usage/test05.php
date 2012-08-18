@@ -12,6 +12,11 @@ class Collection<E> implements \IteratorAggregate
 		$this->items[] = $item;
 	}
 
+	public function merge(Collection<E> $items)
+	{
+		foreach ($items as $item) $this->items[] = $item;
+	}
+
 	public function getIterator()
 	{
 		return new \ArrayIterator($this->items);
@@ -51,5 +56,19 @@ $users->add($f->create(4));
 try {
 	$users->add(new ORM\Entity\Article(100));
 } catch (\Exception $e) {
+	dump($e->getMessage());
+}
+
+$enemies = $f->createCollection(array(10, 11, 12));
+$users->merge($enemies);
+dump($users);
+
+
+try {
+	$af = new Factory<ORM\Entity\Article>($em);
+	$articles = $af->createCollection(array(20, 21));
+	$users->merge($articles);
+	die ("Expected exception"); // or excepted expection
+} catch(\Exception $e) {
 	dump($e->getMessage());
 }
