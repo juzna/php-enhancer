@@ -1,19 +1,21 @@
 new instance - simple
 <?php#e
+use MyNS\Foo;
 $f = new Foo;
 ?>
 <?php#c
-$f = \GenericsRegistry::newInstance('Foo', NULL);
+$f = \GenericsRegistry::newInstance('MyNS\Foo', NULL);
 ?>
 ------------------------------------------------j-d--
 
 
 new instance - generics
 <?php#e
+use MyNS\Foo;
 $f = new Factory<Foo>();
 ?>
 <?php#c
-$f = \GenericsRegistry::newInstance('Factory', array('Foo'));
+$f = \GenericsRegistry::newInstance('Factory', array('MyNS\Foo'));
 ?>
 ------------------------------------------------j-d--
 
@@ -52,7 +54,7 @@ class Factory<E>
 
 new instance of generic with type-argument
 <?php#e
-
+use ORM\Common\Collection;
 class Factory<E>
 {
 	public function createCollection(array $ids) {
@@ -64,7 +66,7 @@ class Factory<E>
 \GenericsRegistry::registerClass('Factory', array('E')); class Factory implements \GenericType
 {public function getParametrizedType($parameterName) { return \GenericsRegistry::getParametrizedTypesForObject($this); }
 	public function createCollection($ids) {
-		return \GenericsRegistry::newInstance('Collection', array(\GenericsRegistry::resolveTypeArgument($this, 'E')), $ids[0], $ids[1]);
+		return \GenericsRegistry::newInstance('ORM\Common\Collection', array(\GenericsRegistry::resolveTypeArgument($this, 'E')), $ids[0], $ids[1]);
 	}
 }
 ?>
