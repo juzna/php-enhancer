@@ -48,7 +48,7 @@ class EnhancerStream
 	 */
 	public function stream_open($path, $mode, $options, &$opened_path)
 	{
-		$this->filename = substr($path, strlen("ehnance://"));
+		$this->filename = $this->parseUrl($path);
 		$this->buffer = self::$enhancer->enhance(file_get_contents($this->filename));
 		$this->pos = 0;
 
@@ -73,9 +73,9 @@ class EnhancerStream
 	 */
 	public function stream_stat()
 	{
-		return array(
-			'size' => strlen($this->buffer),
-		);
+		$ret = stat($this->filename);
+		$ret['size'] = strlen($this->buffer);
+		return $ret;
 	}
 
 
@@ -107,7 +107,22 @@ class EnhancerStream
 	/***/
 	public function url_stat($path, $flags)
 	{
-		return $this->stream_stat();
+		if ($ret = @stat($this->parseUrl($path))) {
+			unset($ret['size']);
+		}
+
+		return $ret;
+	}
+
+
+
+	/*****************  utils  *****************j*d*/
+
+
+
+	private static function parseUrl($path)
+	{
+		return substr($path, strlen("ehnance://"));
 	}
 
 }
