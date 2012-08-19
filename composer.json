@@ -1,5 +1,7 @@
 {
+	"name": "juzna/php-enhancer",
+	"description": "Enhance PHP syntax now",
 	"require": {
-		"nette/nette": "2.0.*"
+		"nette/nette": "*"
 	}
 }
