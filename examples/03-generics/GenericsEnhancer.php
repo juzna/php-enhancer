@@ -1,4 +1,5 @@
 <?php
+use Nette\Utils\PhpGenerator\Helpers;
 
 /**
  * 'new Foo' are converted to a hook
@@ -369,8 +370,13 @@ class GenericsRegistry
 		array_shift($args); // className
 		array_shift($args); // genericTypes
 
-		$obj = $refl->newInstanceArgs($args);
+//		$obj = $refl->newInstanceArgs($args);
+		$obj = Helpers::createObject($className, array());
 		if ($typeValues !== NULL) self::$instances[spl_object_hash($obj)] = $typeValues;
+
+		if (method_exists($obj, '__construct')) {
+			callback($obj, '__construct')->invokeArgs($args);
+		}
 
 		return $obj;
 	}
