@@ -252,7 +252,7 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 
 
 	/**
-	 * @return array
+	 * @return TypeArgument[]
 	 */
 	private function fetchGenericParameter()
 	{
@@ -262,13 +262,9 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 		}
 
 		$this->parser->fetch();
-		while (!$this->parser->isNext('>')) {
-			if ($this->parser->isNext(T_STRING) || $this->parser->isNext(T_NS_SEPARATOR)) {
-				$params[] = str_replace('\\', '\\\\', $this->parser->fetchAll(T_STRING, T_NS_SEPARATOR));
-				continue;
-			}
-
-			$this->parser->fetch(); // ?
+		while ( ! $this->parser->isNext('>')) {
+			$code = trim($this->parser->fetchUntil('>', ','));
+			$params[] = TypeArgument::create($code, $this->uses, $this->namespace);
 		}
 		$this->parser->fetch();
 
@@ -285,6 +281,8 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 	{
 		$parts = array();
 		foreach ($generics as $v) {
+			$v = $v->name;
+
 			if ($this->currentTypeArgs && in_array($v, $this->currentTypeArgs)) { // type argument
 				$parts[] = "\\GenericsRegistry::resolveTypeArgument(\$this, '$v')";
 
@@ -522,10 +520,18 @@ class TypeArgument
 
 
 
-	public static function create($code)
+	public static function create($code, array $uses = null, $namespace = null)
 	{
 		if (preg_match('~^(\S+)\s+(extends|super)\s+(\S+)$~', $code, $match)) {
-			return new self($match[1], $match[3], $match[2] === 'extends');
+
+			$className = $match[3];
+			$segment = strtolower(substr($className, 0, strpos("$className\\", '\\')));
+			$full = isset($uses[$segment])
+					? $uses[$segment] . substr($className, strlen($segment))
+					: $namespace . '\\' . $className;
+			$fullClassName = ltrim($full, '\\');
+
+			return new self($match[1], $fullClassName, $match[2] === 'extends');
 
 		} elseif (preg_match('~^\S+$~', $code)) {
 			return new self($code);
@@ -553,6 +559,12 @@ class TypeArgument
 			return Nette\Reflection\ClassType::from($this->className)->isSubclassOf($actualClassName);
 		}
 	}
+
+	function __toString()
+	{
+		return $this->name;
+	}
+
 
 }
 
