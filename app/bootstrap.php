@@ -19,11 +19,12 @@ $configurator->enableDebugger(__DIR__ . '/../log');
 
 // Enable RobotLoader - this will load all classes automatically
 $configurator->setTempDirectory(__DIR__ . '/../temp');
-$configurator->createRobotLoader()
-	->addDirectory(APP_DIR . '/enhancer')
+//$configurator->createRobotLoader()
+//	->addDirectory(APP_DIR . '/enhancer')
 //	->addDirectory(APP_DIR . '/presenters')
 //	->addDirectory(LIBS_DIR)
-	->register();
+//	->register();
+require_once LIBS_DIR . '/juzna/php-enhancer/examples/03-generics/GenericsEnhancer.php';
 
 
 // Enhanced loader
