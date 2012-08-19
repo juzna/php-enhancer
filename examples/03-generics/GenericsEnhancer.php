@@ -144,7 +144,7 @@ class GenericsEnhancer implements \Enhancer\IEnhancer
 
 				$classDef[6] = $this->parser->fetch(T_WHITESPACE) . $this->parser->fetchAll('{'); // start class
 
-				$classDef[7] = $generics ? 'public function getParametrizedType($parameterName) { return \GenericsRegistry::getParametrizedTypesForObject($this); }' : '';
+				$classDef[7] = $generics ? 'public function getParametrizedType($parameterName) { return \GenericsRegistry::getParametrizedTypesForObject($this, $parameterName); }' : '';
 
 				$s .= '\\GenericsRegistry::registerClass(\'' .
 					$this->fullClass($className) . '\', array(\'' .
@@ -387,14 +387,16 @@ class GenericsRegistry
 	 * @param object $object
 	 * @return TypeValue[]  typeArgumentName => TypeValue
 	 */
-	public static function getParametrizedTypesForObject($object)
+	public static function getParametrizedTypesForObject($object, $parameterName = NULL)
 	{
 		$oid = spl_object_hash($object);
 		if (!isset(self::$instances[$oid])) {
 			return array();
 		}
 
-		return self::$instances[$oid];
+		$ret = self::$instances[$oid];
+
+		return ($parameterName !== NULL) ? $ret[$parameterName] : $ret;
 	}
 
 
