@@ -21,7 +21,7 @@ $configurator->enableDebugger(__DIR__ . '/../log');
 $configurator->setTempDirectory(__DIR__ . '/../temp');
 $configurator->createRobotLoader()
 	->addDirectory(APP_DIR . '/enhancer')
-	->addDirectory(APP_DIR . '/presenters')
+//	->addDirectory(APP_DIR . '/presenters')
 //	->addDirectory(LIBS_DIR)
 	->register();
 
@@ -35,7 +35,7 @@ Enhancer\EnhancerStream::$enhancer = new GenericsEnhancer;
 $loader = new Enhancer\Loaders\ClassLoader;
 $loader->register(true);
 $loader->add('', __DIR__ . '/model');
-//$loader->add('', __DIR__ . '/presenters');
+$loader->add('', __DIR__ . '/presenters');
 
 
 // Create Dependency Injection container from config.neon file
