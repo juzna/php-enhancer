@@ -19,12 +19,18 @@
 	},
 	"require": {
 		"php": ">= 5.3.0",
-		"nette/nette": "dev-enhancer"
+		"nette/nette": "dev-enhancer",
+		"juzna/php-enhancer": "dev-feature/generics"
 	},
+	"minimum-stability": "dev",
 	"repositories": [
 		{
 			"type": "vcs",
 			"url": "https://github.com/juzna/nette"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/juzna/php-enhancer"
 		}
 	]
 }
