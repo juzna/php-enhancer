@@ -3,5 +3,10 @@
 	"description": "Enhance PHP syntax now",
 	"require": {
 		"nette/nette": "*"
+	},
+	"autoload": {
+		"psr-0": {
+			"Enhancer": "src/"
+		}
 	}
 }
