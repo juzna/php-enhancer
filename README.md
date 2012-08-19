@@ -21,3 +21,10 @@ loaded via *require*/*include* in PHP. That's actually not a problem, because mo
 
 Should this be a problem, you can try adding a [php extension](https://github.com/juzna/php-enhancer/tree/php-extension)
 which gets deeper into PHPs core and can hook onto anything ;)
+
+
+## Examples
+Simple examples are in `examples` directory.
+
+Example of a complete project based on *Nette sandbox* is in branch [sandbox](https://github.com/juzna/php-enhancer/tree/sandbox).
+Just clone it, install dependencies using composer and you're ready to start your own project with enhanced php.
