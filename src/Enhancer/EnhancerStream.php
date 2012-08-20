@@ -20,6 +20,7 @@ class EnhancerStream
 	 * @var IEnhancer
 	 */
 	public static $enhancer;
+	public static $enhancerClass;
 
 	/**
 	 * @var string
@@ -48,8 +49,10 @@ class EnhancerStream
 	 */
 	public function stream_open($path, $mode, $options, &$opened_path)
 	{
+		$enhancer = self::$enhancer ? self::$enhancer : new self::$enhancerClass;
+
 		$this->filename = substr($path, strlen("ehnance://"));
-		$this->buffer = self::$enhancer->enhance(file_get_contents($this->filename));
+		$this->buffer = $enhancer->enhance(file_get_contents($this->filename));
 		$this->pos = 0;
 
 		if (self::$debug === TRUE) {

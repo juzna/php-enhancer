@@ -1,6 +1,8 @@
 <?php
 
-class Movie extends Entity
+use ORM\Entity;
+
+class Movie extends ORM\Entity
 {
 	attr('name', 'string');
 	attr('rating', 'float');

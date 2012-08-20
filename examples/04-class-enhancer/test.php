@@ -3,7 +3,7 @@ require_once __DIR__ . '/../bootstrap.php';
 
 // Setup enhancer
 require_once __DIR__ . '/ClassEnhancer.php';
-\Enhancer\EnhancerStream::$enhancer = new ClassEnhancer;
+\Enhancer\EnhancerStream::$enhancerClass = 'ClassEnhancer';
 
 
 // Register autoloader
@@ -11,6 +11,7 @@ $loader = new \Enhancer\Loaders\ClassLoader;
 $loader->register(true);
 $loader->add('', __DIR__ . '/classes');
 
+//echo file_get_contents("enhance://" . __DIR__ . '/classes/ORM/Entity.php');
 echo file_get_contents("enhance://" . __DIR__ . '/classes/Movie.php');
 exit;
 

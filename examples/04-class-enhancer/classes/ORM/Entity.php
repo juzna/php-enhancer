@@ -1,5 +1,7 @@
 <?php
 
+namespace ORM;
+
 /**
  * Base entity class
  *

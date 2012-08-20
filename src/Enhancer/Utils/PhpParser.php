@@ -23,4 +23,10 @@ class PhpParser extends Nette\Utils\Tokenizer
 		}
 	}
 
+
+	public function revert($position)
+	{
+		$this->position = $position;
+	}
+
 }
