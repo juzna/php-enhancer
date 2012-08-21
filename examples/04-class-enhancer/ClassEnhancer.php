@@ -14,7 +14,7 @@ class ClassEnhancer implements \Enhancer\IEnhancer
 	public function enhance($code)
 	{
 		$parser = new Enhancer\Utils\PhpParser($code);
-		$builder = new \Enhancer\Builder\Builder($parser);
+		$builder = new \Enhancer\Builder\Php\PhpBuilder($parser);
 		$namespace = '';
 		$uses = array('' => '');
 
@@ -74,10 +74,13 @@ class ClassEnhancer implements \Enhancer\IEnhancer
 			} elseif ($parser->isCurrent(T_STRING) && !$parser->isPrev(T_FUNCTION) && $parser->isNext('(') && $this->level === 0) { // function call in class declaration
 
 				$functionName = $this->getHelperFunctionName($token);
-				$args = $parser->fetchUntil(')') . $parser->fetch(); $parser->fetch(); // ')' + ';'
+				$parser->fetch('(');
+				$args = $parser->fetchUntil(')');
+				$parser->fetch(); $parser->fetch(); // omit ')' + ';'
 
 				if (is_callable($functionName)) {
-					$snippet = eval("return $functionName $args;");
+					$snippet = eval("return $functionName (\$builder, $args);");
+					if (is_array($snippet)) $snippet = implode($snippet);
 					$snippet = str_replace("\n", ' ', $snippet); // remove newlines so that it doesn't break line numbers
 					$builder->append($snippet);
 				} elseif ($functionName) {

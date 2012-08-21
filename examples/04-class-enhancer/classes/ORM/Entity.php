@@ -13,25 +13,30 @@ class Entity
 
 	/*****************  these will generate some code  *****************j*d*/
 
-	public static function attr($name, $type)
+	public static function attr(\Enhancer\Builder\Php\PhpBuilder $builder, $name, $type)
 	{
 		$ucName = ucfirst($name);
 		if (self::isScalarType($type)) $type = NULL;
 
-		return "
-			private \$$name;
+		return array(
+			$builder
+				->createProperty($name)
+				->setVisibility('private'),
 
-			public function get$ucName()
-			{
-				return \$this->$name;
-			}
+			$builder
+				->createMethod("get$ucName")
+				->setVisibility('public')
+				->setBody("return \$this->$name;"),
 
-			public function set$ucName($type \$$name)
-			{
-				\$this->$name = \$$name;
-				return \$this;
-			}
-		";
+			$builder
+				->createMethod("set$ucName")
+				->setVisibility('public')
+				// ->addParameter($name) FIXME: should be here
+				->setBody("
+					\$this->$name = \$$name;
+					return \$this;
+				"),
+		);
 	}
 
 	private static function isScalarType($type)
