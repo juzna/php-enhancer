@@ -1,16 +1,7 @@
 <?php
+# This should not be a .php file, but it is for the sake of autoloader
 
-/**
- * Homepage presenter.
- */
 class HomepagePresenter extends BasePresenter
-{
-
-	public function renderDefault()
-	{
-		$s = new Selection<User>($this->db);
-		$s->where('id >= ?', 2);
-		$this->template->users = $s->toCollection();
-	}
-
-}
+  fn renderDefault()
+    movie = Movie("The Dark Night Returns", 10)
+    this.template.movie = movie

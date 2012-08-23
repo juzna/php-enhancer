@@ -1,18 +1,9 @@
-<?php
-use Nette\Database\Connection;
+<?
+# This should not be a .php file, but it is for the sake of autoloader
 
-/**
- * Base presenter for all application presenters.
- */
 abstract class BasePresenter extends Nette\Application\UI\Presenter
-{
-	/** @var \Nette\Database\Connection */
-	protected $db;
+  # ladyphp bug - there must be a method with body, otherwise syntax error
+  fn __construct()
+    x = 1
 
-	public function __construct(Connection $db)
-	{
-		parent::__construct();
-		$this->db = $db;
-	}
 
-}

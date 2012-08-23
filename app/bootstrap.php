@@ -24,7 +24,8 @@ $configurator->setTempDirectory(__DIR__ . '/../temp');
 //	->addDirectory(APP_DIR . '/presenters')
 //	->addDirectory(LIBS_DIR)
 //	->register();
-require_once LIBS_DIR . '/juzna/php-enhancer/examples/03-generics/GenericsEnhancer.php';
+require_once LIBS_DIR . '/juzna/php-enhancer/examples/05-ladyphp/lady.php';
+require_once LIBS_DIR . '/juzna/php-enhancer/examples/05-ladyphp/LadyPhpEnhancer.php';
 
 
 // Enhanced loader
@@ -32,7 +33,7 @@ if ( ! stream_wrapper_register('enhance', 'Enhancer\\EnhancerStream')) {
 	throw new ErrorException("Unable to register enhancer stream");
 }
 
-Enhancer\EnhancerStream::$enhancer = new GenericsEnhancer;
+Enhancer\EnhancerStream::$enhancer = new LadyPhpEnhancer;
 $loader = new Enhancer\Loaders\ClassLoader;
 $loader->register(true);
 $loader->add('', __DIR__ . '/model');
