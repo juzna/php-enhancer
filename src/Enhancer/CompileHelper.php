@@ -14,10 +14,12 @@ class CompileHelper
 {
 
 	/**
-	 * @param $dir
+	 * @param IEnhancer $enhancer
+	 * @param string $rootDir
+	 * @param string[] $dirs
 	 * @return array
 	 */
-	public static function compileDirs(IEnhancer $enhancer, array $dirs)
+	public static function compileDirs(IEnhancer $enhancer, $rootDir, array $dirs)
 	{
 		$errors = array();
 
@@ -25,7 +27,7 @@ class CompileHelper
 		foreach ($usages as $file) {
 			/** @var \SplFileInfo $file */
 
-			$outputPath = __DIR__ . '/output/' . str_replace(__DIR__ . '/', '', $file->getRealPath());
+			$outputPath = $rootDir . '/output/' . str_replace($rootDir . '/', '', $file->getRealPath());
 			if (self::isFresh($file, $outputPath)) {
 					continue; // if newer, not compile again
 			}

@@ -143,12 +143,13 @@ class RunTest extends \Tests\TestCase
 	private static function compileUsages()
 	{
 		return \Enhancer\CompileHelper::compileDirs(
-					\Enhancer\EnhancerStream::$enhancer,
-					array(
-						__DIR__ . '/model',
-						__DIR__ . '/tests'
-					)
-				);
+			\Enhancer\EnhancerStream::$enhancer,
+			__DIR__,
+			array(
+				__DIR__ . '/model',
+				__DIR__ . '/tests'
+			)
+		);
 	}
 
 }
