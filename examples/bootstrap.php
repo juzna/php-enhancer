@@ -4,6 +4,7 @@
 $loader = require_once __DIR__ . '/../vendor/autoload.php';
 $loader->add('Enhancer', __DIR__ . '/../src/');
 $loader->add('Tests', __DIR__ . '/../src/');
+// NOTE: global $loader variable can be used by custom bootstrap scripts per example
 
 // allow dump()
 Nette\Diagnostics\Debugger::$strictMode = TRUE;

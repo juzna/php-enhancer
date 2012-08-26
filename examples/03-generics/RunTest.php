@@ -2,12 +2,11 @@
 
 namespace GenericsExample;
 
+use Enhancer\Generics\GenericsEnhancer;
 
 
-if (!defined('NETTE')) {
-	require_once __DIR__ . '/../bootstrap.php';
-}
-require_once __DIR__ . '/GenericsEnhancer.php';
+require_once __DIR__ . '/bootstrap.php';
+
 
 /**
  * @author Filip Procházka <filip.prochazka@kdyby.org>
@@ -19,10 +18,12 @@ class RunTest extends \Tests\TestCase
 
 	public function setUp()
 	{
-		\Enhancer\EnhancerStream::$enhancer = new \GenericsEnhancer();
+//		\Enhancer\EnhancerStream::$enhancer = new \GenericsEnhancer();
 	}
 
 
+
+	/*****************  compile-tests  *****************j*d*/
 
 	/**
 	 * @return array
@@ -31,7 +32,7 @@ class RunTest extends \Tests\TestCase
 	{
 		$allCases = array();
 
-		$tests = \Nette\Utils\Finder::findFiles("*.phpt")->from(__DIR__ . '/tests');
+		$tests = \Nette\Utils\Finder::findFiles("*.phpt")->from(__DIR__ . '/compile-tests');
 		foreach ($tests as $file) {
 			/** @var \SplFileInfo $file */
 
@@ -53,25 +54,28 @@ class RunTest extends \Tests\TestCase
 	 */
 	public function testCompiledOutput_testsDirectory($input, $expectedOutput)
 	{
-		$enhancer = new \GenericsEnhancer();
+		$enhancer = new GenericsEnhancer();
 		$output = $enhancer->enhance($input);
 		$this->assertSame($expectedOutput, $output);
 	}
 
 
 
+	/*****************  semantic tests  *****************j*d*/
+
 	/**
 	 * @return array
 	 */
 	public function dataRunUsages_Compiled()
 	{
-		\Enhancer\EnhancerStream::$enhancer = new \GenericsEnhancer();
+//		\Enhancer\EnhancerStream::$enhancer = new GenericsEnhancer();
 		if ($errors = $this->compileUsages()) {
-			return $errors;
+			// return $errors;
+			// TODO: throw or run at least those tests which compiled sucessfully?
 		}
 
 		$tests = array();
-		foreach (glob(__DIR__ . '/output/GenericsExample/usage/*.php') as $test) {
+		foreach (glob(__DIR__ . '/output/tests/*.php') as $test) {
 			$tests[basename($test)] = array($test);
 		}
 
@@ -104,10 +108,10 @@ class RunTest extends \Tests\TestCase
 	 */
 	public function dataRunUsages_Live()
 	{
-		\Enhancer\EnhancerStream::$enhancer = new \GenericsEnhancer();
+		\Enhancer\EnhancerStream::$enhancer = new GenericsEnhancer();
 
 		$tests = array();
-		foreach (glob(__DIR__ . '/GenericsExample/usage/*.php') as $test) {
+		foreach (glob(__DIR__ . '/tests/*.php') as $test) {
 			$tests[basename($test)] = array($test);
 		}
 
@@ -138,42 +142,13 @@ class RunTest extends \Tests\TestCase
 	 */
 	private static function compileUsages()
 	{
-		$errors = array();
-
-		$usages = \Nette\Utils\Finder::findFiles("*.php")->from(__DIR__ . '/GenericsExample');
-		foreach ($usages as $file) {
-			/** @var \SplFileInfo $file */
-
-			$outputPath = __DIR__ . '/output/' . str_replace(__DIR__ . '/', '', $file->getRealPath());
-			if (self::isFresh($file, $outputPath)) {
-					continue; // if newer, not compile again
-			}
-
-			@mkdir(dirname($outputPath), 0777, true);
-			file_put_contents($outputPath, file_get_contents('enhance://' . $file->getRealPath()));
-
-			if ($e = \Enhancer\Utils\PhpSyntax::check($outputPath)) {
-				$errors[] = array($e);
-			}
-		}
-
-		return $errors;
-	}
-
-
-
-	/**
-	 * @param \SplFileInfo $file
-	 * @param string $outputPath
-	 *
-	 * @return bool
-	 */
-	private static function isFresh(\SplFileInfo $file, $outputPath)
-	{
-		$enhancerRefl = new \ReflectionClass('GenericsEnhancer');
-		return file_exists($outputPath)
-			&& filemtime($outputPath) > filemtime($file->getRealPath())
-			&& filemtime($outputPath) > filemtime($enhancerRefl->getFileName());
+		return \Enhancer\CompileHelper::compileDirs(
+					\Enhancer\EnhancerStream::$enhancer,
+					array(
+						__DIR__ . '/model',
+						__DIR__ . '/tests'
+					)
+				);
 	}
 
 }

@@ -30,8 +30,8 @@ class Foo<E>
 }
 ?>
 <?php#c
-\GenericsRegistry::registerClass('Foo', array('E'));class Foo implements \GenericType
-{public function getParametrizedType($parameterName) { return \GenericsRegistry::getParametrizedTypesForObject($this); }
+\Enhancer\Generics\Registry::registerClass('Foo', array('E'));class Foo implements \Enhancer\Generics\GenericType
+{public function getParametrizedType($parameterName) { return \Enhancer\Generics\Registry::getParametrizedTypesForObject($this, $parameterName); }
 	public function getEntity()
 	{
 		// dummy
