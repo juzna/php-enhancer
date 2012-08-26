@@ -1,8 +1,11 @@
 # PhpEnhancer examples
+Each example is in one directory
 
-Each example is in one directory. It contains:
+
+## Directory structure
+Each example contains:
 - **enhancer source code** in `src/` directory; sometimes just one class is enough here.
-- **compile tests** in `compile-tests/` directory; examples of enhanced php with manually crafted result of compilation.
+- optional **compile tests** in `compile-tests/` directory; examples of enhanced php with manually crafted result of compilation.
 - **demo model** classes in `model/` dir with experimental syntax, which will be converted by *enhancer*. These are loaded automatically by class loader.
 - **semantic tests** in `tests/` directory - examples of enhanced code with assertions.
 - **compiled files** in `output/` directory - compiled version of `src` and `tests`; for debugging. It will contain *model* + *tests* subdirectories.
