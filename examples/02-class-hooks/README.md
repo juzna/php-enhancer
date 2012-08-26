@@ -12,7 +12,7 @@ $foo = new Movie("Batman");
 
 will get enhanced into something like this:
 ```php
-$foo = \ClassHookHelder::newInstance('Movie', "Batman");
+$foo = \ClassHookHelper::newInstance('Movie', "Batman");
 ```
 
 See `test.php` demo that it really works.

@@ -1,14 +1,14 @@
 <?php
 
-/**
- * Movie model class
- *
- * @author Jan Dolecek <juzna.cz@gmail.com>
- */
+namespace ClassHookExample;
+
+
+
 class Movie
 {
-	#attr(name)
-	#attr(rating)
+	public $name;
+	public $rating;
+
 
 	public function __construct($name, $rating)
 	{

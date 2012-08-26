@@ -8,7 +8,7 @@ namespace Enhancer\Enhancers;
  *
  * @author Jan Dolecek <juzna.cz@gmail.com>
  */
-class DemoEnhancer
+class DemoEnhancer implements \Enhancer\IEnhancer
 {
 
 	public function enhance($code)

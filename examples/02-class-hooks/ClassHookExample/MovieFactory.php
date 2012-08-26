@@ -1,5 +1,8 @@
 <?php
 
+namespace ClassHookExample;
+
+
 
 class MovieFactory
 {
