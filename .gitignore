@@ -1,0 +1,5 @@
+/composer.lock
+/libs/*
+!/libs/.*
+!/libs/web.config
+/app/config/config.local.neon
