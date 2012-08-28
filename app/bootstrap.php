@@ -42,8 +42,11 @@ $loader->add('', __DIR__ . '/presenters');
 
 // Create Dependency Injection container from config.neon file
 $configurator
-	->addConfig(__DIR__ . '/config/config.neon', FALSE)
-	->addConfig(__DIR__ . '/config/config.local.neon', FALSE);
+	->addConfig(__DIR__ . '/config/config.neon', FALSE);
+
+if (is_file(__DIR__ . '/config/config.local.neon'))
+  $configurator->addConfig(__DIR__ . '/config/config.local.neon', FALSE);
+
 $container = $configurator->createContainer();
 
 // Setup router
