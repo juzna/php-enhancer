@@ -78,6 +78,7 @@ class EnhancerStream
 	{
 		return array(
 			'size' => strlen($this->buffer),
+			'mode' => 0100644, // it's a file
 		);
 	}
 
